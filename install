@@ -1,0 +1,5 @@
+#!/bin/bash
+SRC_DIR=/scratch1/07980/sli4/containers/
+DST_DIR=~/.local/share/jupyter/kernels/
+mkdir -p $DST_DIR
+cp -r $SRC_DIR/cnn_course_container $DST_DIR
