@@ -35,7 +35,7 @@ jobs:
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         publish_dir: ./out/_build/html
-        
+
 permissions:
-  contents: read
-  pages: write 
+  contents: write
+  pages: write
