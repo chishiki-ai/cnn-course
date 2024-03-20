@@ -1,0 +1,928 @@
+
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+    <title>Building a CNN Classifier with PyTorch: Part 1 &#8212; Building CNN Classifiers at Scale</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="_static/styles/theme.css?digest=5b4479735964841361fd" rel="stylesheet" />
+<link href="_static/styles/bootstrap.css?digest=5b4479735964841361fd" rel="stylesheet" />
+<link href="_static/styles/pydata-sphinx-theme.css?digest=5b4479735964841361fd" rel="stylesheet" />
+
+  
+  <link href="_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=5b4479735964841361fd" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" href="_static/styles/sphinx-book-theme.css?digest=14f4ca6b54d191a8c7657f6c759bf11a5fb86285" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="_static/togglebutton.css" />
+    <link rel="stylesheet" type="text/css" href="_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
+    <link rel="stylesheet" type="text/css" href="_static/sphinx-thebe.css" />
+    <link rel="stylesheet" type="text/css" href="_static/design-style.4045f2051d55cab465a707391d5b2007.min.css" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=5b4479735964841361fd" />
+<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=5b4479735964841361fd" />
+  <script src="_static/vendor/fontawesome/6.1.2/js/all.min.js?digest=5b4479735964841361fd"></script>
+
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/clipboard.min.js"></script>
+    <script src="_static/copybutton.js"></script>
+    <script src="_static/scripts/sphinx-book-theme.js?digest=5a5c038af52cf7bc1a1ec88eea08e6366ee68824"></script>
+    <script>let toggleHintShow = 'Click to show';</script>
+    <script>let toggleHintHide = 'Click to hide';</script>
+    <script>let toggleOpenOnPrint = 'true';</script>
+    <script src="_static/togglebutton.js"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script src="_static/design-tabs.js"></script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"
+const thebe_selector = ".thebe,.cell"
+const thebe_selector_input = "pre"
+const thebe_selector_output = ".output, .cell_output"
+</script>
+    <script async="async" src="_static/sphinx-thebe.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'intro-building-cnn-pytorch-exercise';</script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>
+    Back to top
+  </button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__primary"
+          id="__primary"/>
+  <label class="overlay overlay-primary" for="__primary"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__secondary"
+          id="__secondary"/>
+  <label class="overlay overlay-secondary" for="__secondary"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search this book..."
+         aria-label="Search this book..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+  
+    <nav class="bd-header navbar navbar-expand-lg bd-navbar">
+    </nav>
+  
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+
+<a class="navbar-brand logo" href="README.html">
+  
+  
+  
+  
+  
+  
+    <p class="title logo__title">Building CNN Classifiers at Scale</p>
+  
+</a></div>
+        <div class="sidebar-primary-item"><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        
+        <ul class="nav bd-sidenav bd-sidenav__home-link">
+            <li class="toctree-l1">
+                <a class="reference internal" href="README.html">
+                    Building Scalable CNN models
+                </a>
+            </li>
+        </ul>
+        <ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="lecture_notes/lecture_note.html">Image Classification and Convolutional Neural Network</a></li>
+<li class="toctree-l1"><a class="reference internal" href="intro-building-cnn-pytorch-solution.html">Building a CNN Classifier with PyTorch: Part 1</a></li>
+<li class="toctree-l1"><a class="reference internal" href="part2-building-cnn-pytorch-solution.html">Building a CNN Classifier with PyTorch: Part 2</a></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><label class="sidebar-toggle primary-toggle btn btn-sm" for="__primary" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</label></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+
+
+
+<div class="dropdown dropdown-source-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Source repositories">
+    <i class="fab fa-github"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="https://github.com/chishiki-ai/cnn-course" target="_blank"
+   class="btn btn-sm btn-source-repository-button dropdown-item"
+   title="Source repository"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+<span class="btn__text-container">Repository</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li><a href="https://github.com/chishiki-ai/cnn-course/issues/new?title=Issue%20on%20page%20%2Fintro-building-cnn-pytorch-exercise.html&body=Your%20issue%20content%20here." target="_blank"
+   class="btn btn-sm btn-source-issues-button dropdown-item"
+   title="Open an issue"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-lightbulb"></i>
+  </span>
+<span class="btn__text-container">Open issue</span>
+</a>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+
+
+<div class="dropdown dropdown-download-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Download this page">
+    <i class="fas fa-download"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="_sources/intro-building-cnn-pytorch-exercise.ipynb" target="_blank"
+   class="btn btn-sm btn-download-source-button dropdown-item"
+   title="Download source file"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="btn__text-container">.ipynb</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li>
+<button onclick="window.print()"
+  class="btn btn-sm btn-download-pdf-button dropdown-item"
+  title="Print to PDF"
+  data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="btn__text-container">.pdf</span>
+</button>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="theme-switch nav-link" data-mode="light"><i class="fa-solid fa-sun fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="dark"><i class="fa-solid fa-moon fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg"></i></span>
+  </button>
+`);
+</script>
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+  </button>
+`);
+</script>
+<label class="sidebar-toggle secondary-toggle btn btn-sm" for="__secondary"title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</label>
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>Building a CNN Classifier with PyTorch: Part 1</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#dataset-loaders-and-transforms">Dataset Loaders and Transforms</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#downloading-dataset">Downloading dataset</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#dataset-and-transforms">Dataset and Transforms</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#dataset">Dataset</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#transforms">Transforms</a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#construct-dataloaders">Construct Dataloaders</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#visualizing-the-design-safe-dataset">Visualizing the Design Safe Dataset</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#building-the-neural-network">Building the Neural Network</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#resnet">ResNet</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#transfer-learning">Transfer Learning</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#training-the-neural-network">Training the Neural Network</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#define-loss-function-and-optimizer">Define Loss Function and Optimizer</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#train-and-model-evaluation-functions">Train and Model Evaluation Functions</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#check-for-gpu-and-move-model-to-correct-device">Check for GPU and move model to correct device</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#train-model">Train Model</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#optional-exercise">OPTIONAL EXERCISE</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#conclusion">Conclusion</a></li>
+</ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article" role="main">
+                  
+  <section class="tex2jax_ignore mathjax_ignore" id="building-a-cnn-classifier-with-pytorch-part-1">
+<h1>Building a CNN Classifier with PyTorch: Part 1<a class="headerlink" href="#building-a-cnn-classifier-with-pytorch-part-1" title="Permalink to this heading">#</a></h1>
+<p>In this tutorial, we will walk through the basic components of building a CNN classifier with PyTorch. We will use a <a class="reference external" href="https://www.designsafe-ci.org/">Design Safe</a> dataset from Hurricane Harvey, a category 4 hurricane that hit Texas in August of 2017 and resulted in catastrophic flooding to the Houston metropolitan area. The data set is specifically focused on image classification of homes according to the amount of damage the home received. All images of homes are labeled as C0, C2, or C4 respectively for low, medium or high damage.</p>
+<center><img src=Image/pytorch_logo.png /></center>
+<p>Pytorch is a popular machine learning library for building deep learning models developed by Facebook.  The basics of building a CNN model with Pytorch can be broken down into the following components:</p>
+<ul class="simple">
+<li><p>Dataset Loaders and Transforms</p></li>
+<li><p>Building the Neural Network</p></li>
+<li><p>Training the Neural Network</p></li>
+</ul>
+<p>Let’s get started by importing the modules we need for this notebook as well as set a few hyperparameters needed throughout the notebook. Then, we will dive into the basics of dataset loaders and transforms.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">from</span> <span class="nn">torchvision</span> <span class="kn">import</span> <span class="n">datasets</span><span class="p">,</span> <span class="n">models</span><span class="p">,</span> <span class="n">transforms</span>
+<span class="kn">import</span> <span class="nn">torch.nn</span> <span class="k">as</span> <span class="nn">nn</span>
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="o">%</span><span class="k">matplotlib</span> inline
+
+<span class="n">torch</span><span class="o">.</span><span class="n">hub</span><span class="o">.</span><span class="n">set_dir</span><span class="p">(</span><span class="s1">&#39;/tmp&#39;</span><span class="p">)</span> <span class="c1"># remove when not running here </span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>This notebook will use the following hyperparameters:</p>
+<ul class="simple">
+<li><p>Learning Rate (lr): how much model parameters are updated at each batch/epoch</p></li>
+<li><p>Batch Size: number of data points used to estimate gradients at each iteration</p></li>
+<li><p>Epochs: Number of times to iterate over our entire dataset in optimization process</p></li>
+</ul>
+<p>These hyperparameters will be used throughout the notebook and are defined below.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">hp</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;lr&quot;</span><span class="p">:</span><span class="mf">1e-4</span><span class="p">,</span> <span class="s2">&quot;batch_size&quot;</span><span class="p">:</span><span class="mi">16</span><span class="p">,</span> <span class="s2">&quot;epochs&quot;</span><span class="p">:</span><span class="mi">5</span><span class="p">}</span>
+</pre></div>
+</div>
+</div>
+</div>
+<section id="dataset-loaders-and-transforms">
+<h2>Dataset Loaders and Transforms<a class="headerlink" href="#dataset-loaders-and-transforms" title="Permalink to this heading">#</a></h2>
+<p>Loading, transforming and preparing data for building deep learning can be messy and difficult to maintain.  Pytorch provides tools to ease this effort and decouples it from the training portion of your machine learning pipeline. Below summarizes the three Pytorch tools we will highlight in this demo:</p>
+<ul class="simple">
+<li><p>Dataset: stores data and their corresponding labels</p></li>
+<li><p>Transforms: performs data manipulation to make data suitable for training</p></li>
+<li><p>DataLoaders: iterable around the dataset for ease of access to samples from the dataset.</p></li>
+</ul>
+<p>Let’s dive into each of these components and load our design safe dataset.</p>
+<section id="downloading-dataset">
+<h3>Downloading dataset<a class="headerlink" href="#downloading-dataset" title="Permalink to this heading">#</a></h3>
+<p>We first need to get our data set</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">!</span><span class="w"> </span>cp<span class="w"> </span>-r<span class="w"> </span>/scratch1/07980/sli4/training/cnn_course/data/data.tar.gz<span class="w"> </span>/tmp/
+<span class="o">!</span><span class="w"> </span>tar<span class="w"> </span>zxf<span class="w"> </span>/tmp/data.tar.gz<span class="w"> </span>-C<span class="w"> </span>/tmp
+<span class="o">!</span><span class="w"> </span>ls<span class="w"> </span>/tmp/Dataset_2
+<span class="o">!</span><span class="w"> </span>rm<span class="w"> </span>/tmp/data.tar.gz
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Train  Validation
+</pre></div>
+</div>
+</div>
+</div>
+<p>Next, let’s define the path to out train and validation sets based on the structure of the downloaded data.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">train_path</span><span class="p">,</span> <span class="n">val_path</span><span class="p">,</span><span class="n">test_path</span> <span class="o">=</span> <span class="s2">&quot;/tmp/Dataset_2/Train/&quot;</span><span class="p">,</span> <span class="s2">&quot;/tmp/Dataset_2/Validation/&quot;</span><span class="p">,</span> <span class="kc">None</span>
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="dataset-and-transforms">
+<h3>Dataset and Transforms<a class="headerlink" href="#dataset-and-transforms" title="Permalink to this heading">#</a></h3>
+<p>Next, we set up a function to load our data and subsequently perform needed transforms.  This functions uses a few tools that exist within torchvision.</p>
+<section id="dataset">
+<h4>Dataset<a class="headerlink" href="#dataset" title="Permalink to this heading">#</a></h4>
+<p><code class="docutils literal notranslate"><span class="pre">torchvision.datasets.ImageFolder</span></code> is a generic data loader where images are structured as follows:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">path_to_data</span><span class="o">/</span><span class="n">C0</span><span class="o">/**.</span><span class="n">png</span>
+<span class="n">path_to_data</span><span class="o">/</span><span class="n">C2</span><span class="o">/**.</span><span class="n">png</span>
+<span class="n">path_to_data</span><span class="o">/</span><span class="n">C4</span><span class="o">/**.</span><span class="n">png</span>
+</pre></div>
+</div>
+<p>Note the directories C0, C2, and C4 are the names of the three classes in our classifier and, in this case, refer to low, medium and high levels of damage. Another noteworthy feature of torchvision’s datasets is that images are not immediately loaded into memory.  They are loaded one by one as needed.</p>
+</section>
+<section id="transforms">
+<h4>Transforms<a class="headerlink" href="#transforms" title="Permalink to this heading">#</a></h4>
+<p><code class="docutils literal notranslate"><span class="pre">torchvision.transforms.Compose</span></code> applies a series of transformations to your data. In our function, we use Compose to perform a series of two transforms:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">torchvision.transforms.Resize</span></code> which resizes your image to the specified dimension</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">torchvision.transofrms.ToTensor</span></code> converts you images from PIL or numpy arrrays to a torch tensor.</p></li>
+</ul>
+<p>In the function below, we use <code class="docutils literal notranslate"><span class="pre">ImageFolder</span></code> to load our train, validation and testing data and perform the needed transformations as described above.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">load_datasets</span><span class="p">(</span><span class="n">train_path</span><span class="p">,</span> <span class="n">val_path</span><span class="p">,</span> <span class="n">test_path</span><span class="p">):</span>
+    
+  <span class="c1"># define the transformations</span>
+  <span class="n">img_transform</span> <span class="o">=</span> 
+
+  <span class="c1"># load data</span>
+  <span class="n">train_dataset</span> <span class="o">=</span> 
+
+  <span class="n">val_dataset</span> <span class="o">=</span> <span class="n">datasets</span><span class="o">.</span><span class="n">ImageFolder</span><span class="p">(</span><span class="n">val_path</span><span class="p">,</span> <span class="n">transform</span><span class="o">=</span><span class="n">img_transform</span><span class="p">)</span> 
+  <span class="n">test_dataset</span> <span class="o">=</span> <span class="n">datasets</span><span class="o">.</span><span class="n">ImageFolder</span><span class="p">(</span><span class="n">test_path</span><span class="p">,</span> <span class="n">transform</span><span class="o">=</span><span class="n">img_transform</span><span class="p">)</span> <span class="k">if</span> <span class="n">test_path</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span>
+  <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Train set size: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">train_dataset</span><span class="p">)</span><span class="si">}</span><span class="s2">, Validation set size: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">val_dataset</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+  <span class="k">return</span> <span class="n">train_dataset</span><span class="p">,</span> <span class="n">val_dataset</span><span class="p">,</span> <span class="n">test_dataset</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">train_set</span><span class="p">,</span> <span class="n">val_set</span><span class="p">,</span> <span class="n">test_set</span> <span class="o">=</span> <span class="n">load_datasets</span><span class="p">(</span><span class="n">train_path</span><span class="p">,</span> <span class="n">val_path</span><span class="p">,</span> <span class="n">test_path</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Train set size: 1322, Validation set size: 363
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+</section>
+<section id="construct-dataloaders">
+<h3>Construct Dataloaders<a class="headerlink" href="#construct-dataloaders" title="Permalink to this heading">#</a></h3>
+<p>As mentioned above, Pytorch’s dataset features load images one by one. When training deep learning models, we typically use a batch gradient descent algorithm to optimize our network and thus we will need to load random images in our specified batch sizes at each gradient descent step. Pytorch’s DataLoader is an iterable that automatically performs and loads the data need at each iteration via a simple API.  In the function, we instantiate the DataLoader for our train, test and validation datasets.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">construct_dataloaders</span><span class="p">(</span><span class="n">train_set</span><span class="p">,</span> <span class="n">val_set</span><span class="p">,</span> <span class="n">test_set</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+
+  <span class="c1"># instantate the DataLoader</span>
+  <span class="n">train_dataloader</span> <span class="o">=</span> 
+
+  <span class="n">val_dataloader</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">DataLoader</span><span class="p">(</span><span class="n">val_set</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">)</span> 
+  <span class="n">test_dataloader</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">DataLoader</span><span class="p">(</span><span class="n">test_set</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">)</span> <span class="k">if</span> <span class="n">test_path</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span>
+  <span class="k">return</span> <span class="n">train_dataloader</span><span class="p">,</span> <span class="n">val_dataloader</span><span class="p">,</span> <span class="n">test_dataloader</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">train_dataloader</span><span class="p">,</span> <span class="n">val_dataloader</span><span class="p">,</span> <span class="n">test_dataloader</span> <span class="o">=</span> <span class="n">construct_dataloaders</span><span class="p">(</span><span class="n">train_set</span><span class="p">,</span> <span class="n">val_set</span><span class="p">,</span> <span class="n">test_set</span><span class="p">,</span> <span class="n">hp</span><span class="p">[</span><span class="s2">&quot;batch_size&quot;</span><span class="p">],</span> <span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="visualizing-the-design-safe-dataset">
+<h3>Visualizing the Design Safe Dataset<a class="headerlink" href="#visualizing-the-design-safe-dataset" title="Permalink to this heading">#</a></h3>
+<p>Before we move on to building the architecture of our CNN model, let’s visualize some of our design safe dataset.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fig</span><span class="p">,</span><span class="n">axs</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">8</span><span class="p">))</span>
+<span class="n">label_map</span><span class="o">=</span><span class="p">{</span><span class="mi">0</span><span class="p">:</span> <span class="s1">&#39;low damage&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">:</span><span class="s1">&#39;medium damage&#39;</span><span class="p">,</span> <span class="mi">2</span><span class="p">:</span><span class="s1">&#39;high damage&#39;</span><span class="p">}</span>
+<span class="k">for</span> <span class="n">ax</span> <span class="ow">in</span> <span class="n">axs</span><span class="o">.</span><span class="n">ravel</span><span class="p">():</span>
+    <span class="n">sample_idx</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">train_set</span><span class="p">),</span> <span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,))</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+    <span class="n">img</span><span class="p">,</span> <span class="n">label</span> <span class="o">=</span> <span class="n">train_set</span><span class="p">[</span><span class="n">sample_idx</span><span class="p">]</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">img</span><span class="o">.</span><span class="n">permute</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span> <span class="c1">#.reshape((244,244,3)))</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="n">label_map</span><span class="p">[</span><span class="n">label</span><span class="p">])</span>
+<span class="n">fig</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="_images/c7d38f8dc66d00a68f470dba2baad65bb5209210d5db2bcbcb87b2e7938c0eca.png" src="_images/c7d38f8dc66d00a68f470dba2baad65bb5209210d5db2bcbcb87b2e7938c0eca.png" />
+</div>
+</div>
+<p>As we can see above, our dataset contains images of houses post Hurricane Harvey.  Each of these images has been labeled as having low, medium, or high levels of damage.</p>
+</section>
+</section>
+<section id="building-the-neural-network">
+<h2>Building the Neural Network<a class="headerlink" href="#building-the-neural-network" title="Permalink to this heading">#</a></h2>
+<p>Next, we need to build the architecture of our CNN classfier.  In this tutorial, we will utilize transfer learning.  It is rare for people to build CNN from scratch as we can leverage a CNN model that was trained with very large datasets and apply that knowledge to our use case as is done in transfer learning.</p>
+<section id="resnet">
+<h3>ResNet<a class="headerlink" href="#resnet" title="Permalink to this heading">#</a></h3>
+<p>In this tutorial we will start with the resnet18 model trained with the ImageNet dataset.  Below we instantiate this model and load the pretrained weights.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">resnet</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">resnet18</span><span class="p">(</span><span class="n">weights</span><span class="o">=</span><span class="s2">&quot;IMAGENET1K_V1&quot;</span><span class="p">)</span>    
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="transfer-learning">
+<h3>Transfer Learning<a class="headerlink" href="#transfer-learning" title="Permalink to this heading">#</a></h3>
+<p>With transfer learning there are two common ways we can utilize previously optimized weights for specific CNN architectures:</p>
+<ul class="simple">
+<li><p>Start the optimization process of model at the previously optimized weight instead of random weights.  This will accelerate the training process of the entire network.</p></li>
+<li><p>Use the previously optimized weights as a fixed feature extractor.  That is, we freeze the previously learned weights except that of the last fully connected layers.</p></li>
+</ul>
+<p>In this tutorial, we will use ResNet18 as a fixed feature extractor.  Let’s start by freezing all the weights in our network:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">param</span> <span class="ow">in</span> <span class="n">resnet</span><span class="o">.</span><span class="n">parameters</span><span class="p">():</span>
+    <span class="n">param</span><span class="o">.</span><span class="n">requires_grad</span> <span class="o">=</span> <span class="kc">False</span> 
+</pre></div>
+</div>
+</div>
+</div>
+<p>Note, if we wanted to fine tune our entire model, we could skip the above step.</p>
+<p>Then, we can add a new final fully connected layer.  These parameters will, by default in Pytorch, not be frozen when we replace the final fully connected layers and will be learned in the training process.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># print last fully connected layer</span>
+<span class="n">resnet</span><span class="o">.</span><span class="n">fc</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Linear(in_features=512, out_features=1000, bias=True)
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># get the input dimension for this layer</span>
+
+
+<span class="c1"># build the new final fully connected layers of network</span>
+
+
+<span class="c1"># replace final fully connected layer</span>
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+</section>
+<section id="training-the-neural-network">
+<h2>Training the Neural Network<a class="headerlink" href="#training-the-neural-network" title="Permalink to this heading">#</a></h2>
+<section id="define-loss-function-and-optimizer">
+<h3>Define Loss Function and Optimizer<a class="headerlink" href="#define-loss-function-and-optimizer" title="Permalink to this heading">#</a></h3>
+<p>Now that we have our dataloaders set up and our model architecture built, we are ready to train our model.  To train the model, we need to set up a loss function and an optimizer to optimize that loss function.  Below we instantiate the Cross Entropy Loss function and the Adam optimizer.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">opt</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">Adam</span><span class="p">(</span><span class="n">resnet</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span><span class="n">lr</span><span class="o">=</span><span class="n">hp</span><span class="p">[</span><span class="s2">&quot;lr&quot;</span><span class="p">])</span>
+<span class="n">loss_fn</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">CrossEntropyLoss</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>Note that we are using the learning rate hyperparameter specified at the the top of this notebook.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">hp</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>{&#39;lr&#39;: 0.0001, &#39;batch_size&#39;: 16, &#39;epochs&#39;: 5}
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="train-and-model-evaluation-functions">
+<h3>Train and Model Evaluation Functions<a class="headerlink" href="#train-and-model-evaluation-functions" title="Permalink to this heading">#</a></h3>
+<p>Finally, we need to define standard pytorch train and evaluation functions.  The function <code class="docutils literal notranslate"><span class="pre">train</span></code> iterates over multiple epochs and all batches of data in each epoch.  Model parameters are updated for each batch with the given loss function and optimizer.  The model accuracy and loss is computing with testing data at every epoch.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nd">@torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">()</span>
+<span class="k">def</span> <span class="nf">eval_model</span><span class="p">(</span><span class="n">data_loader</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">loss_fn</span><span class="p">,</span> <span class="n">DEVICE</span><span class="p">):</span>
+  <span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
+  <span class="n">loss</span><span class="p">,</span> <span class="n">accuracy</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span>
+  <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">data_loader</span><span class="p">)</span>
+
+  <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">data</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">data_loader</span><span class="p">):</span>
+    <span class="n">x</span><span class="p">,</span><span class="n">y</span> <span class="o">=</span> <span class="n">data</span>
+    <span class="n">x</span><span class="p">,</span><span class="n">y</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">DEVICE</span><span class="p">),</span> <span class="n">y</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">DEVICE</span><span class="p">)</span>
+    <span class="n">pred</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+    <span class="n">loss</span> <span class="o">+=</span> <span class="n">loss_fn</span><span class="p">(</span><span class="n">pred</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span><span class="o">/</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+    <span class="n">pred_label</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">pred</span><span class="p">,</span> <span class="n">axis</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">accuracy</span> <span class="o">+=</span> <span class="n">torch</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">pred_label</span> <span class="o">==</span> <span class="n">y</span><span class="p">)</span><span class="o">/</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+    
+  <span class="k">return</span> <span class="n">loss</span><span class="o">/</span><span class="n">n</span><span class="p">,</span> <span class="n">accuracy</span><span class="o">/</span><span class="n">n</span> 
+
+<span class="k">def</span> <span class="nf">train</span><span class="p">(</span><span class="n">train_loader</span><span class="p">,</span> <span class="n">val_loader</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">opt</span><span class="p">,</span> <span class="n">loss_fn</span><span class="p">,</span> <span class="n">epochs</span><span class="p">,</span> <span class="n">DEVICE</span><span class="p">):</span>
+  <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">train_loader</span><span class="p">)</span>
+
+  <span class="k">for</span> <span class="n">epoch</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">epochs</span><span class="p">):</span>
+    <span class="n">model</span><span class="o">.</span><span class="n">train</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">count</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">avg_loss</span><span class="p">,</span> <span class="n">avg_acc</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span>
+    <span class="n">count</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Epoch </span><span class="si">{</span><span class="n">epoch</span><span class="o">+</span><span class="mi">1</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">epochs</span><span class="si">}</span><span class="s2">:&quot;</span><span class="p">)</span>
+    <span class="n">start_time</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="ow">in</span> <span class="n">train_loader</span><span class="p">:</span>
+      <span class="c1"># move data to gpu</span>
+    
+      <span class="c1"># compute model prediction</span>
+        
+      <span class="c1"># compute model loss</span>
+    
+      <span class="c1"># backpropogation</span>
+      <span class="c1"># reset gradient calculations</span>
+      
+      <span class="c1"># compute gradients</span>
+      
+      <span class="c1"># update model parameters via optimization step</span>
+        
+      <span class="n">avg_loss</span> <span class="o">+=</span> <span class="n">loss</span>
+      <span class="n">pred_label</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">pred</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+      <span class="n">avg_acc</span> <span class="o">+=</span> <span class="n">torch</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">pred_label</span> <span class="o">==</span> <span class="n">y</span><span class="p">)</span><span class="o">/</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        
+    <span class="n">end_time</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Time: </span><span class="si">{</span><span class="p">(</span><span class="n">end_time</span><span class="o">-</span><span class="n">start_time</span><span class="p">)</span><span class="o">.</span><span class="n">seconds</span><span class="si">}</span><span class="s2">s&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Average train loss: </span><span class="si">{</span><span class="n">avg_loss</span><span class="o">/</span><span class="n">n</span><span class="si">}</span><span class="s2">, Average train accuracy: </span><span class="si">{</span><span class="n">avg_acc</span><span class="o">/</span><span class="n">n</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">val_loss</span><span class="p">,</span> <span class="n">val_acc</span> <span class="o">=</span> <span class="n">eval_model</span><span class="p">(</span><span class="n">val_loader</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">loss_fn</span><span class="p">,</span> <span class="n">DEVICE</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Val loss: </span><span class="si">{</span><span class="n">val_loss</span><span class="si">}</span><span class="s2">, Val accuracy: </span><span class="si">{</span><span class="n">val_acc</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="check-for-gpu-and-move-model-to-correct-device">
+<h3>Check for GPU and move model to correct device<a class="headerlink" href="#check-for-gpu-and-move-model-to-correct-device" title="Permalink to this heading">#</a></h3>
+<p>Finally, we need to check if a gpu is available.  If a gpu is available, we will pass our model and data to the gpu to accelerate the calculations needed to train this model.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">device</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s2">&quot;cuda:0&quot;</span> <span class="k">if</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">is_available</span><span class="p">()</span> <span class="k">else</span> <span class="s2">&quot;cpu&quot;</span><span class="p">)</span>
+<span class="n">device</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>device(type=&#39;cuda&#39;, index=0)
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">resnet</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">);</span> <span class="c1"># pass resnet model to gpu</span>
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="train-model">
+<h3>Train Model<a class="headerlink" href="#train-model" title="Permalink to this heading">#</a></h3>
+<p>Tasks:</p>
+<ol class="arabic simple">
+<li><p>Monitor Val accuracy change along epochs</p></li>
+<li><p>Monitor Val accuracy vs. train accuracy</p></li>
+</ol>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">train</span><span class="p">(</span><span class="n">train_dataloader</span><span class="p">,</span> <span class="n">val_dataloader</span><span class="p">,</span> <span class="n">resnet</span><span class="p">,</span> <span class="n">opt</span><span class="p">,</span> <span class="n">loss_fn</span><span class="p">,</span> <span class="n">hp</span><span class="p">[</span><span class="s2">&quot;epochs&quot;</span><span class="p">],</span> <span class="n">device</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Epoch 1/5:
+Time: 227s
+Average train loss: 0.9787924289703369, Average train accuracy: 0.5275601744651794
+Val loss: 0.05397671461105347, Val accuracy: 0.6563735604286194
+
+Epoch 2/5:
+Time: 225s
+Average train loss: 0.8186715841293335, Average train accuracy: 0.6528614163398743
+Val loss: 0.04819485917687416, Val accuracy: 0.6944169998168945
+
+Epoch 3/5:
+Time: 226s
+Average train loss: 0.7649137377738953, Average train accuracy: 0.6733433604240417
+Val loss: 0.04729057475924492, Val accuracy: 0.6916996240615845
+
+Epoch 4/5:
+Time: 228s
+Average train loss: 0.7149023413658142, Average train accuracy: 0.6850903034210205
+Val loss: 0.046091992408037186, Val accuracy: 0.6931818127632141
+
+Epoch 5/5:
+Time: 231s
+Average train loss: 0.6881916522979736, Average train accuracy: 0.7182228565216064
+Val loss: 0.043412353843450546, Val accuracy: 0.7228261232376099
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="optional-exercise">
+<h3>OPTIONAL EXERCISE<a class="headerlink" href="#optional-exercise" title="Permalink to this heading">#</a></h3>
+<p>In the demo above we trained ResNet18 model with hyperparameters with learning rate 1e-4 for 5 epochs. Try to train the model with learning rate 1e-5 and 1e-3, and compare the training speed and performance. Which is the best learning rate: 1e-5, 1e-4 or 1e-3?</p>
+</section>
+</section>
+<section id="conclusion">
+<h2>Conclusion<a class="headerlink" href="#conclusion" title="Permalink to this heading">#</a></h2>
+<p>In this notebook, we introduced the basics of how to build a CNN classification model using transfer learning as a fixed feature extractor.  There were three major steps:</p>
+<ol class="arabic simple">
+<li><p>Loading and transforming our data</p></li>
+<li><p>Building the architecture of our network</p></li>
+<li><p>Training our model</p></li>
+</ol>
+<p>In part 2 of this notebook, we will make several modifications to the workflow introduced in this notebook and see if we can improve the performance of our model.</p>
+</section>
+</section>
+
+    <script type="text/x-thebe-config">
+    {
+        requestKernel: true,
+        binderOptions: {
+            repo: "binder-examples/jupyter-stacks-datascience",
+            ref: "master",
+        },
+        codeMirrorConfig: {
+            theme: "abcdef",
+            mode: "cnn_course_container"
+        },
+        kernelOptions: {
+            name: "cnn_course_container",
+            path: "./."
+        },
+        predefinedOutput: true
+    }
+    </script>
+    <script>kernelName = 'cnn_course_container'</script>
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer">
+                  
+<div class="prev-next-area">
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#dataset-loaders-and-transforms">Dataset Loaders and Transforms</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#downloading-dataset">Downloading dataset</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#dataset-and-transforms">Dataset and Transforms</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#dataset">Dataset</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#transforms">Transforms</a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#construct-dataloaders">Construct Dataloaders</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#visualizing-the-design-safe-dataset">Visualizing the Design Safe Dataset</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#building-the-neural-network">Building the Neural Network</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#resnet">ResNet</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#transfer-learning">Transfer Learning</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#training-the-neural-network">Training the Neural Network</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#define-loss-function-and-optimizer">Define Loss Function and Optimizer</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#train-and-model-evaluation-functions">Train and Model Evaluation Functions</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#check-for-gpu-and-move-model-to-correct-device">Check for GPU and move model to correct device</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#train-model">Train Model</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#optional-exercise">OPTIONAL EXERCISE</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#conclusion">Conclusion</a></li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By Krishna Kumar and TACC team
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright 2022.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="_static/scripts/bootstrap.js?digest=5b4479735964841361fd"></script>
+<script src="_static/scripts/pydata-sphinx-theme.js?digest=5b4479735964841361fd"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>

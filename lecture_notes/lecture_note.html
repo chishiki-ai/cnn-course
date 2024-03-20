@@ -1,0 +1,723 @@
+
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+    <title>Image Classification and Convolutional Neural Network &#8212; Building CNN Classifiers at Scale</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=5b4479735964841361fd" rel="stylesheet" />
+<link href="../_static/styles/bootstrap.css?digest=5b4479735964841361fd" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=5b4479735964841361fd" rel="stylesheet" />
+
+  
+  <link href="../_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=5b4479735964841361fd" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" href="../_static/styles/sphinx-book-theme.css?digest=14f4ca6b54d191a8c7657f6c759bf11a5fb86285" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../_static/togglebutton.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-thebe.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/design-style.4045f2051d55cab465a707391d5b2007.min.css" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=5b4479735964841361fd" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=5b4479735964841361fd" />
+  <script src="../_static/vendor/fontawesome/6.1.2/js/all.min.js?digest=5b4479735964841361fd"></script>
+
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="../_static/clipboard.min.js"></script>
+    <script src="../_static/copybutton.js"></script>
+    <script src="../_static/scripts/sphinx-book-theme.js?digest=5a5c038af52cf7bc1a1ec88eea08e6366ee68824"></script>
+    <script>let toggleHintShow = 'Click to show';</script>
+    <script>let toggleHintHide = 'Click to hide';</script>
+    <script>let toggleOpenOnPrint = 'true';</script>
+    <script src="../_static/togglebutton.js"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script src="../_static/design-tabs.js"></script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"
+const thebe_selector = ".thebe,.cell"
+const thebe_selector_input = "pre"
+const thebe_selector_output = ".output, .cell_output"
+</script>
+    <script async="async" src="../_static/sphinx-thebe.js"></script>
+    <script>window.MathJax = {"options": {"processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'lecture_notes/lecture_note';</script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Building a CNN Classifier with PyTorch: Part 1" href="../intro-building-cnn-pytorch-solution.html" />
+    <link rel="prev" title="Building Scalable CNN models" href="../README.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>
+    Back to top
+  </button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__primary"
+          id="__primary"/>
+  <label class="overlay overlay-primary" for="__primary"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__secondary"
+          id="__secondary"/>
+  <label class="overlay overlay-secondary" for="__secondary"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search this book..."
+         aria-label="Search this book..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+  
+    <nav class="bd-header navbar navbar-expand-lg bd-navbar">
+    </nav>
+  
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+
+<a class="navbar-brand logo" href="../README.html">
+  
+  
+  
+  
+  
+  
+    <p class="title logo__title">Building CNN Classifiers at Scale</p>
+  
+</a></div>
+        <div class="sidebar-primary-item"><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        
+        <ul class="nav bd-sidenav bd-sidenav__home-link">
+            <li class="toctree-l1">
+                <a class="reference internal" href="../README.html">
+                    Building Scalable CNN models
+                </a>
+            </li>
+        </ul>
+        <ul class="current nav bd-sidenav">
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">Image Classification and Convolutional Neural Network</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intro-building-cnn-pytorch-solution.html">Building a CNN Classifier with PyTorch: Part 1</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../part2-building-cnn-pytorch-solution.html">Building a CNN Classifier with PyTorch: Part 2</a></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><label class="sidebar-toggle primary-toggle btn btn-sm" for="__primary" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</label></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+
+
+
+<div class="dropdown dropdown-source-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Source repositories">
+    <i class="fab fa-github"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="https://github.com/chishiki-ai/cnn-course" target="_blank"
+   class="btn btn-sm btn-source-repository-button dropdown-item"
+   title="Source repository"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+<span class="btn__text-container">Repository</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li><a href="https://github.com/chishiki-ai/cnn-course/issues/new?title=Issue%20on%20page%20%2Flecture_notes/lecture_note.html&body=Your%20issue%20content%20here." target="_blank"
+   class="btn btn-sm btn-source-issues-button dropdown-item"
+   title="Open an issue"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-lightbulb"></i>
+  </span>
+<span class="btn__text-container">Open issue</span>
+</a>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+
+
+<div class="dropdown dropdown-download-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Download this page">
+    <i class="fas fa-download"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="../_sources/lecture_notes/lecture_note.md" target="_blank"
+   class="btn btn-sm btn-download-source-button dropdown-item"
+   title="Download source file"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="btn__text-container">.md</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li>
+<button onclick="window.print()"
+  class="btn btn-sm btn-download-pdf-button dropdown-item"
+  title="Print to PDF"
+  data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="btn__text-container">.pdf</span>
+</button>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="theme-switch nav-link" data-mode="light"><i class="fa-solid fa-sun fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="dark"><i class="fa-solid fa-moon fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg"></i></span>
+  </button>
+`);
+</script>
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+  </button>
+`);
+</script>
+<label class="sidebar-toggle secondary-toggle btn btn-sm" for="__secondary"title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</label>
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>Image Classification and Convolutional Neural Network</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#outline">Outline</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#traditional-methods">Traditional Methods</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#what-is-deep-learning">What is Deep Learning?</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#multi-layer-perceptron-mlp">Multi-Layer Perceptron (MLP)</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#what-is-perceptron">What is Perceptron</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id5">Multi-Layer Perceptron (MLP)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#training-and-testing">Training and Testing</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#softmax-regression">Softmax Regression</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#underfitting-vs-overfitting">Underfitting vs. Overfitting</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#convolutional-neural-network-cnn">Convolutional Neural Network (CNN)</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#from-mlp-to-cnn">From MLP to CNN</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#convolutional-layer">Convolutional Layer</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pooling-layer">Pooling Layer</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#dropout-layer">Dropout layer</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#residual-connection">Residual connection</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#data-augmentation">Data augmentation</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#transfer-learning">Transfer Learning</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#reference">Reference</a></li>
+</ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article" role="main">
+                  
+  <section class="tex2jax_ignore mathjax_ignore" id="image-classification-and-convolutional-neural-network">
+<h1>Image Classification and Convolutional Neural Network<a class="headerlink" href="#image-classification-and-convolutional-neural-network" title="Permalink to this heading">#</a></h1>
+<section id="outline">
+<h2>Outline<a class="headerlink" href="#outline" title="Permalink to this heading">#</a></h2>
+<p>In this tutorial we will first introduce <span class="xref myst">basic ML/DL models</span> including <span class="xref myst">multilayer perceptron</span> and <span class="xref myst">convolitional neural network</span>. We will also walk through an introduction on PyTorch and introduce DataLoader as well as doing <span class="xref myst">data transform</span> with PyTorch. There will be a hands-on session on Natural Hazard Detection as an example of how CNN can be used to do image classification.</p>
+</section>
+<section id="traditional-methods">
+<span id="id1"></span><h2>Traditional Methods<a class="headerlink" href="#traditional-methods" title="Permalink to this heading">#</a></h2>
+<p>Traditional image classification methods consist of two steps: 1. Feature extraction (encoding) 2. Establishing a connection between features and image labels (decoding)</p>
+<a class="reference internal image-reference" href="../_images/Picture1.png"><img alt="traditional_method" class="align-center" src="../_images/Picture1.png" style="height: 175px;" /></a>
+<p>Image source: <span id="id2">[<a class="reference internal" href="#id17" title="Centiner. URL: https://github.com/NHERI-SimCenter/SimCenter_DesignSafe_ML_2022/blob/main/presentations/day3/MLTraining2022_ImageClassification.pdf.">Cen</a>]</span></p>
+</section>
+<section id="what-is-deep-learning">
+<h2>What is Deep Learning?<a class="headerlink" href="#what-is-deep-learning" title="Permalink to this heading">#</a></h2>
+<p>As we mentioned, traditional approaches first identifies the features to solve a problem, then develops methods to extract these features. In contrast, deep learning methods identifies the features it needs to solve a problem using the presented data.</p>
+<a class="reference internal image-reference" href="../_images/Picture2.png"><img alt="traditional_method" class="align-center" src="../_images/Picture2.png" style="height: 175px;" /></a>
+<p>Image source: <span id="id3">[<a class="reference internal" href="#id18" title="Mahapatra. URL: https://towardsdatascience.com/why-deep-learning-is-needed-over-traditional-machine-learning-1b6a99177063.">Mah</a>]</span></p>
+</section>
+<section id="multi-layer-perceptron-mlp">
+<span id="mlp"></span><h2>Multi-Layer Perceptron (MLP)<a class="headerlink" href="#multi-layer-perceptron-mlp" title="Permalink to this heading">#</a></h2>
+<section id="what-is-perceptron">
+<h3>What is Perceptron<a class="headerlink" href="#what-is-perceptron" title="Permalink to this heading">#</a></h3>
+<p>Before we learn about multi-layer perceptron (MLP), we need to dive into the conception of perceptron, since MLP originates from the concept of perceptron.
+The assumption behind perception is that our dataset is linearly separable (i.e. there exits a hyperplane that can perfectly divide the dataset into two small groups). Suppose our dataset has two classes with label +1 and -1, then perceptron can find such hyperplane that seperates the two clasese in a finite number of steps. If the assumption is not held, perceptron will fail.
+The perceptron classifier defines the hyperplane that seperates the two classes as</p>
+<div class="math notranslate nohighlight">
+\[H = {x : dot(x, w) + b = 0}\]</div>
+<p>Positive examples are defined as the examples with</p>
+<div class="math notranslate nohighlight">
+\[dot(x, w) + b &gt; 0\]</div>
+<p>and negative examples are defined as examples with</p>
+<div class="math notranslate nohighlight">
+\[dot(x, w) + b &lt; 0\]</div>
+<a class="reference internal image-reference" href="../_images/Picture3.png"><img alt="traditional_method" class="align-center" src="../_images/Picture3.png" style="height: 200px;" /></a>
+<p>Image source: <span id="id4">[<a class="reference internal" href="#id19" title="Weinberger. URL: https://www.cs.cornell.edu/courses/cs4780/2023fa/lectures/lecturenote03.html.">Wei</a>]</span></p>
+</section>
+<section id="id5">
+<h3>Multi-Layer Perceptron (MLP)<a class="headerlink" href="#id5" title="Permalink to this heading">#</a></h3>
+<p>When MLP is applied to a linear regression problem, it can be considered as building a piecewise linear function to simulate the target curve.</p>
+<a class="reference internal image-reference" href="../_images/Picture4.png"><img alt="traditional_method" class="align-center" src="../_images/Picture4.png" style="height: 150px;" /></a>
+<p>Layers in MLP are called linear layer or fully connected layer. Neurons in each layer are fully connected to the neurons in its following layer. The figure below shows an example of MLP for binary classification.</p>
+<a class="reference internal image-reference" href="../_images/Picture5.png"><img alt="traditional_method" class="align-center" src="../_images/Picture5.png" style="height: 175px;" /></a>
+<p>Image source: <span id="id6">[<a class="reference internal" href="#id20" title="Li. URL: https://cs231n.github.io/neural-networks-1/.">Li</a>]</span></p>
+<p>Here is the formular for the MLP shown in the figure:</p>
+<p><span class="math notranslate nohighlight">\(w^{(i)}\)</span>: weight matrx of layer <span class="math notranslate nohighlight">\(i\)</span></p>
+<p><span class="math notranslate nohighlight">\(o^{(i)}\)</span>: output of layer <span class="math notranslate nohighlight">\(i\)</span></p>
+<p><span class="math notranslate nohighlight">\(x\)</span>: input vector</p>
+<p><span class="math notranslate nohighlight">\(y\)</span>: output scaler</p>
+<p><span class="math notranslate nohighlight">\(\sigma\)</span>: activation function (e.g. sigmoid, ReLu)</p>
+<p><span class="math notranslate nohighlight">\(o^{(1)} = \sigma((w^{(1)})^Tx)\)</span></p>
+<p><span class="math notranslate nohighlight">\(o^{(2)} = \sigma((w^{(2)})^To^{(1)})\)</span></p>
+<p><span class="math notranslate nohighlight">\(y = (w^{(3)})^To^{(2)}\)</span></p>
+<p>For binary classification (i.e. dataset has only two possible labels), we can define one class having label 1 and the other class with label -1, and then use the sign of <span class="math notranslate nohighlight">\(𝑦∈\mathbb{R}\)</span> as the classification result. For multiclass classification, we use one output per class that uses the <span class="xref myst">softmax</span> activation function.</p>
+<a class="reference internal image-reference" href="../_images/Picture6.png"><img alt="traditional_method" class="align-center" src="../_images/Picture6.png" style="height: 175px;" /></a>
+<p>Image source: <span id="id7">[<a class="reference internal" href="#id21" title="Opennn. URL: http://www.opennn.net/.">Ope</a>]</span></p>
+</section>
+<section id="training-and-testing">
+<h3>Training and Testing<a class="headerlink" href="#training-and-testing" title="Permalink to this heading">#</a></h3>
+<p>Training is the process for making a model. Training data is the data “observed” by the learning model. Testing is the process for evaluating the performance of the model. Testing Data is data NOT observed by the learning model. When we do prediction, we apply model to data not in either training or testing data set. We assume the input data and its prediction are from the same process producing the training data.</p>
+<p>A basic idea in training machine learning model is to minimize loss function. Numerical optimization methods like gradient descent are commonly used to find optimal values for <span class="math notranslate nohighlight">\(w\)</span>. At every iteration, gradient descent tweaks the parameters to minimize the loss function. Below is the math equation for gradient descent:</p>
+<div class="math notranslate nohighlight">
+\[f(w_t;x)={\frac{1}{n}}\sum_{i=1}^nL(h(x_i), y_i)\]</div>
+<div class="math notranslate nohighlight">
+\[w_{t+1} = w_t - \alpha\nabla f(w_t;x)\]</div>
+<p>Backpropagation is used to calculate the gradient of weight. Fortunately, manual derivation for gradients of different neural networks is not needed. All ML/DL frameworks (e.g. PyTorch and Tensorflow) have auto-derivation engine, which is usually implemented based on computation graph and backprop.</p>
+<a class="reference internal image-reference" href="../_images/Picture7.png"><img alt="traditional_method" class="align-center" src="../_images/Picture7.png" style="height: 175px;" /></a>
+<p>Image source: <span id="id8">[<a class="reference internal" href="#id22" title="Zhang. URL: https://classes.cornell.edu/browse/roster/FA22/class/ECE/5775.">Zha</a>]</span></p>
+</section>
+<section id="softmax-regression">
+<span id="softmax"></span><h3>Softmax Regression<a class="headerlink" href="#softmax-regression" title="Permalink to this heading">#</a></h3>
+<p>Softmax operation convers MLP’s output to possibility. A commonly used loss for output via softmax regression is cross entropy loss. Cross entropy loss measures the variation between the probability distribution for true class distribution and predicted class distribution. Formulars below is the definition of softmax regression and the corresponding cross entropy loss:</p>
+<p>Softmax regression: <span class="math notranslate nohighlight">\(p_i = (softmax(x))_i = \frac{exp(x_i)}{\sum_{j=1}^cexp(x_j)}\)</span></p>
+<p>Cross entropy loss: <span class="math notranslate nohighlight">\(L(x, y) = -\sum_{i=1}^ct_ilog(p_i)\)</span></p>
+<p>Where we define <span class="math notranslate nohighlight">\(t_i\)</span> and <span class="math notranslate nohighlight">\(p_i\)</span> as:</p>
+<p><span class="math notranslate nohighlight">\(t_i\)</span>: true class distribution.</p>
+<p><span class="math notranslate nohighlight">\(p_i\)</span>: predicted class distribution.</p>
+<p>In softmax regression, each neuron in the output layer generates the possibility for the corresponding class. The one with the highest possibility is the prediction label generated by the model.</p>
+</section>
+<section id="underfitting-vs-overfitting">
+<h3>Underfitting vs. Overfitting<a class="headerlink" href="#underfitting-vs-overfitting" title="Permalink to this heading">#</a></h3>
+<p>Underfitting happens when model cannot reflect all the relations from training data. Model performs poorly on training and testing data. In other workds, the model “failed to learn”. We can add more complexity to the model to solve the problem of underfitting. Possible solutions include adding more features, using more complex model, boosting etc.
+Overfitting happens when model has more parameters that can be justified by the data. It leads to poor generalization on new testing data. A sign for overfitting is that the model performs very well on training data but poorly on testing data. Possible solutions include using less complex model, more data, bagging etc.</p>
+<a class="reference internal image-reference" href="../_images/Picture8.png"><img alt="traditional_method" class="align-center" src="../_images/Picture8.png" style="height: 175px;" /></a>
+<p>Image source: <span id="id9">[<a class="reference internal" href="#id26" title="Joglekar. URL: https://medium.com/&#64;srjoglekar246/overfitting-and-human-behavior-5186df1e7d19.">Jog</a>]</span></p>
+</section>
+</section>
+<section id="convolutional-neural-network-cnn">
+<span id="cnn"></span><h2>Convolutional Neural Network (CNN)<a class="headerlink" href="#convolutional-neural-network-cnn" title="Permalink to this heading">#</a></h2>
+<section id="from-mlp-to-cnn">
+<h3>From MLP to CNN<a class="headerlink" href="#from-mlp-to-cnn" title="Permalink to this heading">#</a></h3>
+<p>MLP can be trained to classify simple image dataset, such as MNIST dataset which contains handwritten digits and each image has 28 pixels in width, 28 pixels in height, and 1 greyscale channel. However, as for more complex image recognition tasks, its performance is not so good. The main reason is that the fully connected layers fail to learn the spatial information. Objects of a particular class usually has specific pixel patterns gathered.
+When the object moves to another place in the image, model should still be able to recognize it, even it might not have seen such training image before.</p>
+<a class="reference internal image-reference" href="../_images/Picture9.png"><img alt="traditional_method" class="align-center" src="../_images/Picture9.png" style="height: 150px;" /></a>
+<p>Image source: <span id="id10">[<a class="reference internal" href="#id23" title="Vidhya. URL: https://medium.com/analytics-vidhya/cnn-convolutional-neural-network-8d0a292b4498.">Vid</a>]</span></p>
+</section>
+<section id="convolutional-layer">
+<h3>Convolutional Layer<a class="headerlink" href="#convolutional-layer" title="Permalink to this heading">#</a></h3>
+<p>The convolutional layer is the core building block of a CNN. It consumes two inputs: input feature maps and a set of filters, and generates output feature maps. The filter is applied to an area of the input feature map by doing a dot product. This dot product is then fed into the output feature map.
+Convolution layers ensures spatial invariance property. No matter where the object is, the model can detect it correctly</p>
+<a class="reference internal image-reference" href="../_images/Picture10.png"><img alt="traditional_method" class="align-center" src="../_images/Picture10.png" style="height: 150px;" /></a>
+<p>Image source: <span id="id11">[<a class="reference internal" href="#id27" title="Bernard. URL: https://classes.cornell.edu/browse/roster/FA22/class/ECE/5775.">Ber</a>]</span></p>
+<a class="reference internal image-reference" href="../_images/Picture11.gif"><img alt="traditional_method" class="align-center" src="../_images/Picture11.gif" style="height: 150px;" /></a>
+<p>Image source: <span id="id12">[<a class="reference internal" href="#id24" title="Britz. URL: https://dennybritz.com/posts/wildml/understanding-convolutional-neural-networks-for-nlp/.">Bri</a>]</span></p>
+</section>
+<section id="pooling-layer">
+<h3>Pooling Layer<a class="headerlink" href="#pooling-layer" title="Permalink to this heading">#</a></h3>
+<p>Convolution exploits the spatial information of pixels, but we still have the problems when object is moved, rotated, or shifted in the image. One common approach to cope this issue is to down sample the information from convolution results. Thus, only the large or important structural elements are preserved and then passed to the following layers. In CNN, we can down sample by using pooling layer. Common pooling operations include max, min, avg.</p>
+</section>
+<section id="dropout-layer">
+<h3>Dropout layer<a class="headerlink" href="#dropout-layer" title="Permalink to this heading">#</a></h3>
+<p>Dropout layer reduces the problem of overfitting. Given a probability of dropout, it randomly drops some neurons from the fully-connected layer. Adding such randomness into the network can increase its generalization to different situations, as it has been proven to be an effective regularization algorithm. One thing to mention is that dropout only happens during the training stage. When we train the model, if a neuron is selected by the dropout layer, it will not contribute to the following layers, its gradient will not be computed, and its parameter will not be updated.</p>
+</section>
+<section id="residual-connection">
+<h3>Residual connection<a class="headerlink" href="#residual-connection" title="Permalink to this heading">#</a></h3>
+<p>Deep CNN models usually have worse performance. This is not caused by overfitting, and adding more layers can lead to higher training error. One explanation is that during training process, gradient vanishing happens in some layers, causing all its preceding layers fail to learn. Residual connection can help reduce model complexity. DenseNet, in which all the layers are connected through the residual signal, can achieve the same prediction accuracy with a smaller CNN model.</p>
+<a class="reference internal image-reference" href="../_images/Picture12.png"><img alt="traditional_method" class="align-center" src="../_images/Picture12.png" style="height: 200px;" /></a>
+<p>Image source: <span id="id13">[<a class="reference internal" href="#id25" title="Gao Huang, Zhuang Liu, Laurens Van Der Maaten, and Kilian Q Weinberger. Densely connected convolutional networks. In Proceedings of the IEEE conference on computer vision and pattern recognition, 4700–4708. 2017.">HLVDMW17</a>]</span></p>
+</section>
+<section id="data-augmentation">
+<span id="id14"></span><h3>Data augmentation<a class="headerlink" href="#data-augmentation" title="Permalink to this heading">#</a></h3>
+<p>What if our CNN model overfits the training dataset, and we are not able to collect more data? A simple solution is to just “make up” more data. This is the idea behind data augmentation. Every time we sample an image from the dataset, we randomly perform some operations on them. For instance, shift, rotate, horizontal and vertical flip, clip, etc. PyTorch has implemented such operations for us.</p>
+</section>
+<section id="transfer-learning">
+<h3>Transfer Learning<a class="headerlink" href="#transfer-learning" title="Permalink to this heading">#</a></h3>
+<p>Usually, the larger the model is, the better performance it can offer, if it does not overfit. To train large model while not causing overfitting, we need large dataset. However, for specific tasks, like natural hazard detection, there might not be enough images, so training large model with such small dataset will cause overfitting. A work around is to use transfer learning. We can use large model and train it again on our small dataset. To adapt large model to our small dataset with fewer number of classes, modifications on the “classification” block is usually needed.</p>
+<a class="reference internal image-reference" href="../_images/Picture13.png"><img alt="traditional_method" class="align-center" src="../_images/Picture13.png" style="height: 200px;" /></a>
+<p>Image source: <span id="id15">[<a class="reference internal" href="#id28" title="Hassan. URL: https://neurohive.io/en/popular-networks/vgg16/.">Has</a>]</span></p>
+</section>
+</section>
+<section id="reference">
+<h2>Reference<a class="headerlink" href="#reference" title="Permalink to this heading">#</a></h2>
+<div class="docutils container" id="id16">
+<div class="citation" id="id27" role="doc-biblioentry">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id11">Ber</a><span class="fn-bracket">]</span></span>
+<p>Bernard. URL: <a class="reference external" href="https://classes.cornell.edu/browse/roster/FA22/class/ECE/5775">https://classes.cornell.edu/browse/roster/FA22/class/ECE/5775</a>.</p>
+</div>
+<div class="citation" id="id24" role="doc-biblioentry">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id12">Bri</a><span class="fn-bracket">]</span></span>
+<p>Britz. URL: <a class="reference external" href="https://dennybritz.com/posts/wildml/understanding-convolutional-neural-networks-for-nlp/">https://dennybritz.com/posts/wildml/understanding-convolutional-neural-networks-for-nlp/</a>.</p>
+</div>
+<div class="citation" id="id17" role="doc-biblioentry">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id2">Cen</a><span class="fn-bracket">]</span></span>
+<p>Centiner. URL: <a class="github reference external" href="https://github.com/NHERI-SimCenter/SimCenter_DesignSafe_ML_2022/blob/main/presentations/day3/MLTraining2022_ImageClassification.pdf">NHERI-SimCenter/SimCenter_DesignSafe_ML_2022</a>.</p>
+</div>
+<div class="citation" id="id28" role="doc-biblioentry">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id15">Has</a><span class="fn-bracket">]</span></span>
+<p>Hassan. URL: <a class="reference external" href="https://neurohive.io/en/popular-networks/vgg16/">https://neurohive.io/en/popular-networks/vgg16/</a>.</p>
+</div>
+<div class="citation" id="id25" role="doc-biblioentry">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id13">HLVDMW17</a><span class="fn-bracket">]</span></span>
+<p>Gao Huang, Zhuang Liu, Laurens Van Der Maaten, and Kilian Q Weinberger. Densely connected convolutional networks. In <em>Proceedings of the IEEE conference on computer vision and pattern recognition</em>, 4700–4708. 2017.</p>
+</div>
+<div class="citation" id="id26" role="doc-biblioentry">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id9">Jog</a><span class="fn-bracket">]</span></span>
+<p>Joglekar. URL: <a class="reference external" href="https://medium.com/&#64;srjoglekar246/overfitting-and-human-behavior-5186df1e7d19">https://medium.com/&#64;srjoglekar246/overfitting-and-human-behavior-5186df1e7d19</a>.</p>
+</div>
+<div class="citation" id="id20" role="doc-biblioentry">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id6">Li</a><span class="fn-bracket">]</span></span>
+<p>Li. URL: <a class="reference external" href="https://cs231n.github.io/neural-networks-1/">https://cs231n.github.io/neural-networks-1/</a>.</p>
+</div>
+<div class="citation" id="id18" role="doc-biblioentry">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id3">Mah</a><span class="fn-bracket">]</span></span>
+<p>Mahapatra. URL: <a class="reference external" href="https://towardsdatascience.com/why-deep-learning-is-needed-over-traditional-machine-learning-1b6a99177063">https://towardsdatascience.com/why-deep-learning-is-needed-over-traditional-machine-learning-1b6a99177063</a>.</p>
+</div>
+<div class="citation" id="id21" role="doc-biblioentry">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id7">Ope</a><span class="fn-bracket">]</span></span>
+<p>Opennn. URL: <a class="reference external" href="http://www.opennn.net/">http://www.opennn.net/</a>.</p>
+</div>
+<div class="citation" id="id23" role="doc-biblioentry">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id10">Vid</a><span class="fn-bracket">]</span></span>
+<p>Vidhya. URL: <a class="reference external" href="https://medium.com/analytics-vidhya/cnn-convolutional-neural-network-8d0a292b4498">https://medium.com/analytics-vidhya/cnn-convolutional-neural-network-8d0a292b4498</a>.</p>
+</div>
+<div class="citation" id="id19" role="doc-biblioentry">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id4">Wei</a><span class="fn-bracket">]</span></span>
+<p>Weinberger. URL: <a class="reference external" href="https://www.cs.cornell.edu/courses/cs4780/2023fa/lectures/lecturenote03.html">https://www.cs.cornell.edu/courses/cs4780/2023fa/lectures/lecturenote03.html</a>.</p>
+</div>
+<div class="citation" id="id22" role="doc-biblioentry">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id8">Zha</a><span class="fn-bracket">]</span></span>
+<p>Zhang. URL: <a class="reference external" href="https://classes.cornell.edu/browse/roster/FA22/class/ECE/5775">https://classes.cornell.edu/browse/roster/FA22/class/ECE/5775</a>.</p>
+</div>
+</div>
+</div>
+</section>
+</section>
+
+    <script type="text/x-thebe-config">
+    {
+        requestKernel: true,
+        binderOptions: {
+            repo: "binder-examples/jupyter-stacks-datascience",
+            ref: "master",
+        },
+        codeMirrorConfig: {
+            theme: "abcdef",
+            mode: "python"
+        },
+        kernelOptions: {
+            name: "python3",
+            path: "./lecture_notes"
+        },
+        predefinedOutput: true
+    }
+    </script>
+    <script>kernelName = 'python3'</script>
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="../README.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Building Scalable CNN models</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="../intro-building-cnn-pytorch-solution.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Building a CNN Classifier with PyTorch: Part 1</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#outline">Outline</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#traditional-methods">Traditional Methods</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#what-is-deep-learning">What is Deep Learning?</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#multi-layer-perceptron-mlp">Multi-Layer Perceptron (MLP)</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#what-is-perceptron">What is Perceptron</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id5">Multi-Layer Perceptron (MLP)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#training-and-testing">Training and Testing</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#softmax-regression">Softmax Regression</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#underfitting-vs-overfitting">Underfitting vs. Overfitting</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#convolutional-neural-network-cnn">Convolutional Neural Network (CNN)</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#from-mlp-to-cnn">From MLP to CNN</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#convolutional-layer">Convolutional Layer</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pooling-layer">Pooling Layer</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#dropout-layer">Dropout layer</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#residual-connection">Residual connection</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#data-augmentation">Data augmentation</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#transfer-learning">Transfer Learning</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#reference">Reference</a></li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By Krishna Kumar and TACC team
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright 2022.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../_static/scripts/bootstrap.js?digest=5b4479735964841361fd"></script>
+<script src="../_static/scripts/pydata-sphinx-theme.js?digest=5b4479735964841361fd"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>
