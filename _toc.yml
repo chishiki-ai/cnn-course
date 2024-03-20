@@ -4,5 +4,6 @@
 format: jb-book
 root: README
 chapters:
-- file: intro-building-cnn-pytorch
-- file: part2-building-cnn-pytorch.ipynb
+- file: lecture_notes/lecture_note
+- file: intro-building-cnn-pytorch-solution
+- file: part2-building-cnn-pytorch-solution
