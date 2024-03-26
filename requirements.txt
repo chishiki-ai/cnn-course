@@ -1,4 +1,4 @@
 Pygments
-jupyter-book
+jupyter-book==1.0.0
 matplotlib
 numpy
