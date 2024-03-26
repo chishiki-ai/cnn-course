@@ -57,6 +57,7 @@
     <script async="async" src="_static/sphinx-thebe.js?v=c100c467"></script>
     <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
     <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
+    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'part2-building-cnn-pytorch-solution';</script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -648,10 +649,17 @@ document.write(`
 <h4>Label smoothing<a class="headerlink" href="#label-smoothing" title="Link to this heading">#</a></h4>
 <p>Typically when performing classification we “one hot encode” the label we are trying to predict into a numerical representation that is typically integers. For example if we are predicting cats versus dogs in images, cats could represent 0 and dogs would be represented by 1.  The most helpful classifiers predict probabilities of an outcome.  That is, the model predicting 0.6 in the example above would mean there is a 60% chance that the image is a dog.</p>
 <p>Label smoothing is a regularization technique that introdcues some noise into the labels in our training data.  In label smoothing, we alter the numerical representations of our data to decrease the confidence that an an existing image is of a particular class in our training set.  A parameter called <code class="docutils literal notranslate"><span class="pre">label_smoothing</span></code>, or $\alpha$, controls how much we decrease the confidence an image is of a particular class via the following equation:</p>
-<p>$$label_{soft}=label_{hard}(1-\alpha)+\frac{\alpha}{nc}$$</p>
+<div class="amsmath math notranslate nohighlight" id="equation-899968a2-e222-4db6-be29-88bcbc0b39b9">
+<span class="eqno">(1)<a class="headerlink" href="#equation-899968a2-e222-4db6-be29-88bcbc0b39b9" title="Permalink to this equation">#</a></span>\[\begin{align}
+label_{soft}=label_{hard}(1-\alpha)+\frac{\alpha}{nc}
+\end{align}\]</div>
 <p>where nc is the number of classes being predicted in your classifier. Using the cat and dog classifier as an example and assuming we use a label_smoothing=0.1 we find the following new numerical representations of our labels.</p>
-<p>$$label_{cat}=(0\times0.9)+\frac{0.1}{2}=0.05$$</p>
-<p>$$label_{dog}=(1\times0.9)+\frac{0.1}{2}=0.95$$</p>
+<p>$$
+label_{cat}=(0\times0.9)+\frac{0.1}{2}=0.05
+$$</p>
+<p>$$
+label_{dog}=(1\times0.9)+\frac{0.1}{2}=0.95
+$$</p>
 </section>
 <section id="reduced-learning-rate-on-plateau">
 <h4>Reduced learning rate on plateau<a class="headerlink" href="#reduced-learning-rate-on-plateau" title="Link to this heading">#</a></h4>
