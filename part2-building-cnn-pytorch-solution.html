@@ -1,13 +1,12 @@
 
-
 <!DOCTYPE html>
 
 
-<html lang="en" data-content_root="" >
+<html lang="en" data-content_root="./" >
 
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
     <title>Building a CNN Classifier with PyTorch: Part 2 &#8212; Building CNN Classifiers at Scale</title>
   
@@ -19,49 +18,45 @@
   </script>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="_static/styles/theme.css?digest=5b4479735964841361fd" rel="stylesheet" />
-<link href="_static/styles/bootstrap.css?digest=5b4479735964841361fd" rel="stylesheet" />
-<link href="_static/styles/pydata-sphinx-theme.css?digest=5b4479735964841361fd" rel="stylesheet" />
+  <link href="_static/styles/theme.css?digest=8d27b9dea8ad943066ae" rel="stylesheet" />
+<link href="_static/styles/bootstrap.css?digest=8d27b9dea8ad943066ae" rel="stylesheet" />
+<link href="_static/styles/pydata-sphinx-theme.css?digest=8d27b9dea8ad943066ae" rel="stylesheet" />
 
   
-  <link href="_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=5b4479735964841361fd" rel="stylesheet" />
-  <link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2" />
-<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2" />
-<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2" />
+  <link href="_static/vendor/fontawesome/6.5.1/css/all.min.css?digest=8d27b9dea8ad943066ae" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.5.1/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.5.1/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.5.1/webfonts/fa-regular-400.woff2" />
 
-    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
-    <link rel="stylesheet" href="_static/styles/sphinx-book-theme.css?digest=14f4ca6b54d191a8c7657f6c759bf11a5fb86285" type="text/css" />
-    <link rel="stylesheet" type="text/css" href="_static/togglebutton.css" />
-    <link rel="stylesheet" type="text/css" href="_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/sphinx-book-theme.css?v=384b581d" />
+    <link rel="stylesheet" type="text/css" href="_static/togglebutton.css?v=13237357" />
+    <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
     <link rel="stylesheet" type="text/css" href="_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
-    <link rel="stylesheet" type="text/css" href="_static/sphinx-thebe.css" />
-    <link rel="stylesheet" type="text/css" href="_static/design-style.4045f2051d55cab465a707391d5b2007.min.css" />
+    <link rel="stylesheet" type="text/css" href="_static/sphinx-thebe.css?v=4fa983c6" />
+    <link rel="stylesheet" type="text/css" href="_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css?v=0a3b3ea7" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=5b4479735964841361fd" />
-<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=5b4479735964841361fd" />
-  <script src="_static/vendor/fontawesome/6.1.2/js/all.min.js?digest=5b4479735964841361fd"></script>
+  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=8d27b9dea8ad943066ae" />
+<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=8d27b9dea8ad943066ae" />
+  <script src="_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
 
-    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-    <script src="_static/jquery.js"></script>
-    <script src="_static/underscore.js"></script>
-    <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
-    <script src="_static/doctools.js"></script>
-    <script src="_static/clipboard.min.js"></script>
-    <script src="_static/copybutton.js"></script>
-    <script src="_static/scripts/sphinx-book-theme.js?digest=5a5c038af52cf7bc1a1ec88eea08e6366ee68824"></script>
+    <script src="_static/documentation_options.js?v=9eb32ce0"></script>
+    <script src="_static/doctools.js?v=888ff710"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="_static/copybutton.js?v=f281be69"></script>
+    <script src="_static/scripts/sphinx-book-theme.js?v=efea14e4"></script>
     <script>let toggleHintShow = 'Click to show';</script>
     <script>let toggleHintHide = 'Click to hide';</script>
     <script>let toggleOpenOnPrint = 'true';</script>
-    <script src="_static/togglebutton.js"></script>
+    <script src="_static/togglebutton.js?v=4a39c7ea"></script>
     <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
-    <script src="_static/design-tabs.js"></script>
-    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"
-const thebe_selector = ".thebe,.cell"
-const thebe_selector_input = "pre"
-const thebe_selector_output = ".output, .cell_output"
-</script>
-    <script async="async" src="_static/sphinx-thebe.js"></script>
+    <script src="_static/design-tabs.js?v=36754332"></script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
+    <script async="async" src="_static/sphinx-thebe.js?v=c100c467"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'part2-building-cnn-pytorch-solution';</script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -75,10 +70,9 @@ const thebe_selector_output = ".output, .cell_output"
 
   
   
-  <a class="skip-link" href="#main-content">Skip to main content</a>
+  <a id="pst-skip-link" class="skip-link" href="#main-content">Skip to main content</a>
   
   <div id="pst-scroll-pixel-helper"></div>
-
   
   <button type="button" class="btn rounded-pill" id="pst-back-to-top">
     <i class="fa-solid fa-arrow-up"></i>
@@ -119,11 +113,14 @@ const thebe_selector_output = ".output, .cell_output"
 </form></div>
   </div>
   
-    <nav class="bd-header navbar navbar-expand-lg bd-navbar">
-    </nav>
+    <header class="bd-header navbar navbar-expand-lg bd-navbar">
+    </header>
   
+
   <div class="bd-container">
     <div class="bd-container__inner bd-page-width">
+      
+      
       
       <div class="bd-sidebar-primary bd-sidebar">
         
@@ -151,7 +148,18 @@ const thebe_selector_output = ".output, .cell_output"
     <p class="title logo__title">Building CNN Classifiers at Scale</p>
   
 </a></div>
-        <div class="sidebar-primary-item"><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
+        <div class="sidebar-primary-item">
+
+ <script>
+ document.write(`
+   <button class="btn navbar-btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
     <div class="bd-toc-item navbar-nav active">
         
         <ul class="nav bd-sidenav bd-sidenav__home-link">
@@ -401,10 +409,10 @@ document.write(`
               
                 
 <div id="searchbox"></div>
-                <article class="bd-article" role="main">
+                <article class="bd-article">
                   
   <section id="building-a-cnn-classifier-with-pytorch-part-2">
-<h1>Building a CNN Classifier with PyTorch: Part 2<a class="headerlink" href="#building-a-cnn-classifier-with-pytorch-part-2" title="Permalink to this heading">#</a></h1>
+<h1>Building a CNN Classifier with PyTorch: Part 2<a class="headerlink" href="#building-a-cnn-classifier-with-pytorch-part-2" title="Link to this heading">#</a></h1>
 <p>In this tutorial, we will expand “Building a CNN Classifier with PyTorch: Part 1” and introduce more advanced techniques that can be leveraged to optimize the performance of your CNN classifier model.  We will again be using data from <a class="reference external" href="https://www.designsafe-ci.org/">Design Safe</a> in this tutorial, specifically a dataset from Hurricane Harvey, a category 4 hurricane that hit Texas in August of 2017 and resulted in catastrophic flooding to the Houston metropolitan area. The data set is specifically focused on image classification of homes according to the amount of damage the home received. All images of homes are labeled as C0, C2, or C4 respectively for low, medium or high damage.</p>
 <p>Let’s get started by importing the modules we need for this notebook as well as setting a few hyperparameters that are needed throughout the notebook.</p>
 <div class="cell docutils container">
@@ -438,7 +446,7 @@ document.write(`
 </div>
 </div>
 <section id="dataset-loaders-and-transforms">
-<h2>Dataset Loaders and Transforms<a class="headerlink" href="#dataset-loaders-and-transforms" title="Permalink to this heading">#</a></h2>
+<h2>Dataset Loaders and Transforms<a class="headerlink" href="#dataset-loaders-and-transforms" title="Link to this heading">#</a></h2>
 <p>In Part1 of building a CNN Classifier, we introduced three Pytorch tools:</p>
 <ul class="simple">
 <li><p>Dataset: stores data and their corresponding labels</p></li>
@@ -447,7 +455,7 @@ document.write(`
 </ul>
 <p>In this notebook, we will expand on additional transforms that can be done to improve performances of a CNN image classifier.</p>
 <section id="downloading-dataset">
-<h3>Downloading dataset<a class="headerlink" href="#downloading-dataset" title="Permalink to this heading">#</a></h3>
+<h3>Downloading dataset<a class="headerlink" href="#downloading-dataset" title="Link to this heading">#</a></h3>
 <p>We first need to get our data set</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
@@ -473,7 +481,7 @@ document.write(`
 </div>
 </div>
 <section id="transforms">
-<h4>Transforms<a class="headerlink" href="#transforms" title="Permalink to this heading">#</a></h4>
+<h4>Transforms<a class="headerlink" href="#transforms" title="Link to this heading">#</a></h4>
 <p>In the previous notebook, we used <code class="docutils literal notranslate"><span class="pre">torchvision.transforms.Compose</span></code> to apply a series of transformations to our data. Compose performed a series of two transforms:</p>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">torchvision.transforms.Resize</span></code> which resizes your image to the specified dimension</p></li>
@@ -515,7 +523,7 @@ document.write(`
 </section>
 </section>
 <section id="construct-dataloaders">
-<h3>Construct Dataloaders<a class="headerlink" href="#construct-dataloaders" title="Permalink to this heading">#</a></h3>
+<h3>Construct Dataloaders<a class="headerlink" href="#construct-dataloaders" title="Link to this heading">#</a></h3>
 <p>The data constructor is implemented in the same way as part 1 of this tutorial.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
@@ -537,7 +545,7 @@ document.write(`
 </div>
 </section>
 <section id="visualizing-the-augmented-design-safe-dataset">
-<h3>Visualizing the Augmented Design Safe Dataset<a class="headerlink" href="#visualizing-the-augmented-design-safe-dataset" title="Permalink to this heading">#</a></h3>
+<h3>Visualizing the Augmented Design Safe Dataset<a class="headerlink" href="#visualizing-the-augmented-design-safe-dataset" title="Link to this heading">#</a></h3>
 <p>Before we move on to building the architecture of our CNN model, let’s visualize some of our design safe dataset with the data augmentation strategy described above.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
@@ -560,9 +568,9 @@ document.write(`
 </section>
 </section>
 <section id="building-the-neural-network">
-<h2>Building the Neural Network<a class="headerlink" href="#building-the-neural-network" title="Permalink to this heading">#</a></h2>
+<h2>Building the Neural Network<a class="headerlink" href="#building-the-neural-network" title="Link to this heading">#</a></h2>
 <section id="resnet-and-transfer-learning">
-<h3>ResNet and Transfer Learning<a class="headerlink" href="#resnet-and-transfer-learning" title="Permalink to this heading">#</a></h3>
+<h3>ResNet and Transfer Learning<a class="headerlink" href="#resnet-and-transfer-learning" title="Link to this heading">#</a></h3>
 <p>Below we consolidate the code from part 1 of the tutorial into a function used to create the architecture of the network.</p>
 <p>Unlike part 1 of this tutorial, we will use a larger existing resnet model, resnet34, trained with the ImageNet dataset.</p>
 <div class="cell docutils container">
@@ -606,7 +614,7 @@ document.write(`
 </div>
 </section>
 <section id="check-for-gpu-and-move-model-to-correct-device">
-<h3>Check for GPU and move model to correct device<a class="headerlink" href="#check-for-gpu-and-move-model-to-correct-device" title="Permalink to this heading">#</a></h3>
+<h3>Check for GPU and move model to correct device<a class="headerlink" href="#check-for-gpu-and-move-model-to-correct-device" title="Link to this heading">#</a></h3>
 <p>As was done previously, we need to check if a gpu is available.  If a gpu is available, we will pass our model and data to the gpu to accelerate the calculations during the training process.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
@@ -631,13 +639,13 @@ document.write(`
 </section>
 </section>
 <section id="training-the-neural-network">
-<h2>Training the Neural Network<a class="headerlink" href="#training-the-neural-network" title="Permalink to this heading">#</a></h2>
+<h2>Training the Neural Network<a class="headerlink" href="#training-the-neural-network" title="Link to this heading">#</a></h2>
 <section id="define-loss-function-and-optimizer">
-<h3>Define Loss Function and Optimizer<a class="headerlink" href="#define-loss-function-and-optimizer" title="Permalink to this heading">#</a></h3>
+<h3>Define Loss Function and Optimizer<a class="headerlink" href="#define-loss-function-and-optimizer" title="Link to this heading">#</a></h3>
 <p>Now that we have our dataloaders set up and are model architecture built, we are ready to train our model.  To train the model, we need to set up a loss function and an optimizer to optimize that loss function.  Below we instantiate the Cross Entropy Loss function and the Adam optimizer as was done in part 1.</p>
 <p>There are two modifications made in the code below that can lead to improved performance:</p>
 <section id="label-smoothing">
-<h4>Label smoothing<a class="headerlink" href="#label-smoothing" title="Permalink to this heading">#</a></h4>
+<h4>Label smoothing<a class="headerlink" href="#label-smoothing" title="Link to this heading">#</a></h4>
 <p>Typically when performing classification we “one hot encode” the label we are trying to predict into a numerical representation that is typically integers. For example if we are predicting cats versus dogs in images, cats could represent 0 and dogs would be represented by 1.  The most helpful classifiers predict probabilities of an outcome.  That is, the model predicting 0.6 in the example above would mean there is a 60% chance that the image is a dog.</p>
 <p>Label smoothing is a regularization technique that introdcues some noise into the labels in our training data.  In label smoothing, we alter the numerical representations of our data to decrease the confidence that an an existing image is of a particular class in our training set.  A parameter called <code class="docutils literal notranslate"><span class="pre">label_smoothing</span></code>, or $\alpha$, controls how much we decrease the confidence an image is of a particular class via the following equation:</p>
 <p>$$label_{soft}=label_{hard}(1-\alpha)+\frac{\alpha}{nc}$$</p>
@@ -646,7 +654,7 @@ document.write(`
 <p>$$label_{dog}=(1\times0.9)+\frac{0.1}{2}=0.95$$</p>
 </section>
 <section id="reduced-learning-rate-on-plateau">
-<h4>Reduced learning rate on plateau<a class="headerlink" href="#reduced-learning-rate-on-plateau" title="Permalink to this heading">#</a></h4>
+<h4>Reduced learning rate on plateau<a class="headerlink" href="#reduced-learning-rate-on-plateau" title="Link to this heading">#</a></h4>
 <p>When optimizing neural networks, learning rates play a large role in the performance obtained of your model during training. Often times when training a deep learning model with a fixed learning rate, performance plateaus at a particular level. It is often advantageous to lower the learning rate at this point and see if any additional performance can be gained.  This technique was used in the original resnet paper and those results are highlighted below:</p>
 <p><img alt="" src="http://www.bdhammel.com/assets/learning-rate/resnet_loss.png" /></p>
 <p>There is a tool in pytorch – <code class="docutils literal notranslate"><span class="pre">torch.optim.lr_scheduler.ReduceLROnPlateau</span></code> – which automatically detects when a performance plateau has occurred and lowers the learning rate by the parameter <code class="docutils literal notranslate"><span class="pre">factor</span></code> after the plateau has been detected.</p>
@@ -673,7 +681,7 @@ document.write(`
 </section>
 </section>
 <section id="setting-up-checkpoints">
-<h3>Setting up Checkpoints<a class="headerlink" href="#setting-up-checkpoints" title="Permalink to this heading">#</a></h3>
+<h3>Setting up Checkpoints<a class="headerlink" href="#setting-up-checkpoints" title="Link to this heading">#</a></h3>
 <p>Training deep learning models can take a lot of computational power.  Additionally, you may not create an optimally performing model at the end of the training process.  For example, you may not initially select a sufficient number of epochs, have an underfit model, and need to resume your model training.  Conversely, you could select to many epochs and have a model that has overfit your data (See figure below)</p>
 <a class="reference internal image-reference" href="_images/fitting.png"><img alt="_images/fitting.png" src="_images/fitting.png" style="width: 400px;" /></a>
 <p>In either scenario, having a mechanism in place to save the models produced throughout the training process which result in high validation accuracy will help to ensure that you will not lose information gained throughout the training process. Throughout the rest of this notebook we will implement a process where we save our best performing model we have produced so far.</p>
@@ -715,7 +723,7 @@ document.write(`
 </div>
 </section>
 <section id="train-and-model-evaluation-functions">
-<h3>Train and Model Evaluation Functions<a class="headerlink" href="#train-and-model-evaluation-functions" title="Permalink to this heading">#</a></h3>
+<h3>Train and Model Evaluation Functions<a class="headerlink" href="#train-and-model-evaluation-functions" title="Link to this heading">#</a></h3>
 <p>Finally, we need to define standard pytorch train and evaluation functions.  The function <code class="docutils literal notranslate"><span class="pre">train</span></code> iterates over multiple epochs and all batches of data in each epoch.  Model parameters are updated for each batch with the given loss function and optimizer.  The model accuracy and loss is computing with testing data at every epoch.</p>
 <p>There are two major modification made in this training loop compared to part 1:</p>
 <ol class="arabic simple">
@@ -804,7 +812,7 @@ document.write(`
 </div>
 </section>
 <section id="train-model">
-<h3>Train Model<a class="headerlink" href="#train-model" title="Permalink to this heading">#</a></h3>
+<h3>Train Model<a class="headerlink" href="#train-model" title="Link to this heading">#</a></h3>
 <p>Task:</p>
 <p>Monitor Val accuracy vs. Train accuracy and check if overfitting exists.</p>
 <div class="cell docutils container">
@@ -858,7 +866,7 @@ Finished saving model
 </div>
 </section>
 <section id="optional-exercise">
-<h3>OPTIONAL EXERCISE<a class="headerlink" href="#optional-exercise" title="Permalink to this heading">#</a></h3>
+<h3>OPTIONAL EXERCISE<a class="headerlink" href="#optional-exercise" title="Link to this heading">#</a></h3>
 <p>In the demo above we trained ResNet34 model with data augmentation, label smoothing and learning rate reducer. Try to train the model without these techniques, and compare the training speed and performance.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
@@ -960,9 +968,9 @@ Finished saving model
 </section>
 </section>
 <section id="we-read-back-the-best-model-and-explore-performance-on-various-images">
-<h2>We read back the best model and explore performance on various images<a class="headerlink" href="#we-read-back-the-best-model-and-explore-performance-on-various-images" title="Permalink to this heading">#</a></h2>
+<h2>We read back the best model and explore performance on various images<a class="headerlink" href="#we-read-back-the-best-model-and-explore-performance-on-various-images" title="Link to this heading">#</a></h2>
 <section id="read-the-model-checkpoint">
-<h3>Read the model checkpoint<a class="headerlink" href="#read-the-model-checkpoint" title="Permalink to this heading">#</a></h3>
+<h3>Read the model checkpoint<a class="headerlink" href="#read-the-model-checkpoint" title="Link to this heading">#</a></h3>
 <p>We use load_model_fm_checkpoint to read back in the best model and load in the parameters from our training.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
@@ -1016,7 +1024,7 @@ Finished saving model
 </div>
 </section>
 <section id="load-in-the-dataset">
-<h3>Load in the dataset<a class="headerlink" href="#load-in-the-dataset" title="Permalink to this heading">#</a></h3>
+<h3>Load in the dataset<a class="headerlink" href="#load-in-the-dataset" title="Link to this heading">#</a></h3>
 <p>In the function below, we use ImageFolder to load our testing data and perform the folloing two transformations: torchvision.transforms.Resize, torchvision.transofrms.ToTensor</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
@@ -1048,7 +1056,7 @@ Finished saving model
 </div>
 </section>
 <section id="perform-inference-on-a-random-image">
-<h3>Perform inference on a random image<a class="headerlink" href="#perform-inference-on-a-random-image" title="Permalink to this heading">#</a></h3>
+<h3>Perform inference on a random image<a class="headerlink" href="#perform-inference-on-a-random-image" title="Link to this heading">#</a></h3>
 <p>We can run inference on our model on a image to generate prediction. Let’s run prediction and display the result.</p>
 <p>Tasks:</p>
 <ol class="arabic simple">
@@ -1129,6 +1137,7 @@ prediction result: 1 actual result: 1
               
                 <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
 
+
   <div class="sidebar-secondary-item">
   <div class="page-toc tocsection onthispage">
     <i class="fa-solid fa-list"></i> Contents
@@ -1191,7 +1200,7 @@ By Krishna Kumar and TACC team
 
   <p class="copyright">
     
-      © Copyright 2022.
+      © Copyright 2023.
       <br/>
     
   </p>
@@ -1215,8 +1224,8 @@ By Krishna Kumar and TACC team
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script src="_static/scripts/bootstrap.js?digest=5b4479735964841361fd"></script>
-<script src="_static/scripts/pydata-sphinx-theme.js?digest=5b4479735964841361fd"></script>
+  <script src="_static/scripts/bootstrap.js?digest=8d27b9dea8ad943066ae"></script>
+<script src="_static/scripts/pydata-sphinx-theme.js?digest=8d27b9dea8ad943066ae"></script>
 
   <footer class="bd-footer">
   </footer>
