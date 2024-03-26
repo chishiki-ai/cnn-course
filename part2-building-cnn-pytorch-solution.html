@@ -62,8 +62,6 @@ const thebe_selector_input = "pre"
 const thebe_selector_output = ".output, .cell_output"
 </script>
     <script async="async" src="_static/sphinx-thebe.js"></script>
-    <script>window.MathJax = {"options": {"processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
-    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'part2-building-cnn-pytorch-solution';</script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -164,7 +162,7 @@ const thebe_selector_output = ".output, .cell_output"
             </li>
         </ul>
         <ul class="current nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="lecture_notes/lecture_note.html">Image Classification and Convolutional Neural Network</a></li>
+<li class="toctree-l1"><a class="reference internal" href="lecture_note.html">Image Classification and Convolutional Neural Network</a></li>
 <li class="toctree-l1"><a class="reference internal" href="intro-building-cnn-pytorch-solution.html">Building a CNN Classifier with PyTorch: Part 1</a></li>
 <li class="toctree-l1 current active"><a class="current reference internal" href="#">Building a CNN Classifier with PyTorch: Part 2</a></li>
 </ul>
@@ -405,7 +403,7 @@ document.write(`
 <div id="searchbox"></div>
                 <article class="bd-article" role="main">
                   
-  <section class="tex2jax_ignore mathjax_ignore" id="building-a-cnn-classifier-with-pytorch-part-2">
+  <section id="building-a-cnn-classifier-with-pytorch-part-2">
 <h1>Building a CNN Classifier with PyTorch: Part 2<a class="headerlink" href="#building-a-cnn-classifier-with-pytorch-part-2" title="Permalink to this heading">#</a></h1>
 <p>In this tutorial, we will expand “Building a CNN Classifier with PyTorch: Part 1” and introduce more advanced techniques that can be leveraged to optimize the performance of your CNN classifier model.  We will again be using data from <a class="reference external" href="https://www.designsafe-ci.org/">Design Safe</a> in this tutorial, specifically a dataset from Hurricane Harvey, a category 4 hurricane that hit Texas in August of 2017 and resulted in catastrophic flooding to the Houston metropolitan area. The data set is specifically focused on image classification of homes according to the amount of damage the home received. All images of homes are labeled as C0, C2, or C4 respectively for low, medium or high damage.</p>
 <p>Let’s get started by importing the modules we need for this notebook as well as setting a few hyperparameters that are needed throughout the notebook.</p>
@@ -641,14 +639,11 @@ document.write(`
 <section id="label-smoothing">
 <h4>Label smoothing<a class="headerlink" href="#label-smoothing" title="Permalink to this heading">#</a></h4>
 <p>Typically when performing classification we “one hot encode” the label we are trying to predict into a numerical representation that is typically integers. For example if we are predicting cats versus dogs in images, cats could represent 0 and dogs would be represented by 1.  The most helpful classifiers predict probabilities of an outcome.  That is, the model predicting 0.6 in the example above would mean there is a 60% chance that the image is a dog.</p>
-<p>Label smoothing is a regularization technique that introdcues some noise into the labels in our training data.  In label smoothing, we alter the numerical representations of our data to decrease the confidence that an an existing image is of a particular class in our training set.  A parameter called <code class="docutils literal notranslate"><span class="pre">label_smoothing</span></code>, or <span class="math notranslate nohighlight">\(\alpha\)</span>, controls how much we decrease the confidence an image is of a particular class via the following equation:</p>
-<div class="math notranslate nohighlight">
-\[label_{soft}=label_{hard}(1-\alpha)+\frac{\alpha}{nc}\]</div>
+<p>Label smoothing is a regularization technique that introdcues some noise into the labels in our training data.  In label smoothing, we alter the numerical representations of our data to decrease the confidence that an an existing image is of a particular class in our training set.  A parameter called <code class="docutils literal notranslate"><span class="pre">label_smoothing</span></code>, or $\alpha$, controls how much we decrease the confidence an image is of a particular class via the following equation:</p>
+<p>$$label_{soft}=label_{hard}(1-\alpha)+\frac{\alpha}{nc}$$</p>
 <p>where nc is the number of classes being predicted in your classifier. Using the cat and dog classifier as an example and assuming we use a label_smoothing=0.1 we find the following new numerical representations of our labels.</p>
-<div class="math notranslate nohighlight">
-\[label_{cat}=(0\times0.9)+\frac{0.1}{2}=0.05\]</div>
-<div class="math notranslate nohighlight">
-\[label_{dog}=(1\times0.9)+\frac{0.1}{2}=0.95\]</div>
+<p>$$label_{cat}=(0\times0.9)+\frac{0.1}{2}=0.05$$</p>
+<p>$$label_{dog}=(1\times0.9)+\frac{0.1}{2}=0.95$$</p>
 </section>
 <section id="reduced-learning-rate-on-plateau">
 <h4>Reduced learning rate on plateau<a class="headerlink" href="#reduced-learning-rate-on-plateau" title="Permalink to this heading">#</a></h4>
@@ -680,7 +675,7 @@ document.write(`
 <section id="setting-up-checkpoints">
 <h3>Setting up Checkpoints<a class="headerlink" href="#setting-up-checkpoints" title="Permalink to this heading">#</a></h3>
 <p>Training deep learning models can take a lot of computational power.  Additionally, you may not create an optimally performing model at the end of the training process.  For example, you may not initially select a sufficient number of epochs, have an underfit model, and need to resume your model training.  Conversely, you could select to many epochs and have a model that has overfit your data (See figure below)</p>
-<img src="Image/fitting.png" width="500" height="300"  />
+<a class="reference internal image-reference" href="_images/fitting.png"><img alt="_images/fitting.png" src="_images/fitting.png" style="width: 400px;" /></a>
 <p>In either scenario, having a mechanism in place to save the models produced throughout the training process which result in high validation accuracy will help to ensure that you will not lose information gained throughout the training process. Throughout the rest of this notebook we will implement a process where we save our best performing model we have produced so far.</p>
 <p>To implement this in our pipeline we first implement a function called <code class="docutils literal notranslate"><span class="pre">load_checkpoint</span></code> which will load a saved version of our model using <code class="docutils literal notranslate"><span class="pre">torch.load</span></code>.</p>
 <div class="cell docutils container">
