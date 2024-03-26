@@ -561,7 +561,7 @@ document.write(`
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="_images/84afdb6ac75cc7c2709e9094dfdace895d9c2cbe99ee54c95002ad16d1916707.png" src="_images/84afdb6ac75cc7c2709e9094dfdace895d9c2cbe99ee54c95002ad16d1916707.png" />
+<img alt="_images/f9de04107cb834137d3ffc69c34199211152eb90d75af2c7d1c731780db15f54.png" src="_images/f9de04107cb834137d3ffc69c34199211152eb90d75af2c7d1c731780db15f54.png" />
 </div>
 </div>
 <p>As we can see above, our dataset contains images of houses post Hurricane Harvey.  Each of these images has been labeled as having low, medium, or high levels of damage.  These images have been modified in a variety of ways (rotating, pixels have changed, etc.)</p>
@@ -607,7 +607,7 @@ document.write(`
 </div>
 <div class="cell_output docutils container">
 <div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Downloading: &quot;https://download.pytorch.org/models/resnet34-b627a593.pth&quot; to /tmp/checkpoints/resnet34-b627a593.pth
-100%|██████████| 83.3M/83.3M [00:00&lt;00:00, 109MB/s] 
+100%|██████████| 83.3M/83.3M [00:00&lt;00:00, 111MB/s] 
 </pre></div>
 </div>
 </div>
@@ -671,7 +671,7 @@ document.write(`
 <span class="n">scheduler</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">lr_scheduler</span><span class="o">.</span><span class="n">ReduceLROnPlateau</span><span class="p">(</span><span class="n">opt</span><span class="p">,</span> 
                                                        <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;min&#39;</span><span class="p">,</span>
                                                        <span class="n">factor</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> 
-                                                       <span class="n">patience</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
+                                                       <span class="n">patience</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
                                                        <span class="n">min_lr</span><span class="o">=</span><span class="mf">1e-8</span><span class="p">,</span> 
                                                        <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
@@ -683,7 +683,7 @@ document.write(`
 <section id="setting-up-checkpoints">
 <h3>Setting up Checkpoints<a class="headerlink" href="#setting-up-checkpoints" title="Link to this heading">#</a></h3>
 <p>Training deep learning models can take a lot of computational power.  Additionally, you may not create an optimally performing model at the end of the training process.  For example, you may not initially select a sufficient number of epochs, have an underfit model, and need to resume your model training.  Conversely, you could select to many epochs and have a model that has overfit your data (See figure below)</p>
-<a class="reference internal image-reference" href="_images/fitting.png"><img alt="_images/fitting.png" src="_images/fitting.png" style="width: 400px;" /></a>
+<a class="reference internal image-reference" href="_images/fitting.png"><img alt="_images/fitting.png" src="_images/fitting.png" style="width: 500px; height: 300px;" /></a>
 <p>In either scenario, having a mechanism in place to save the models produced throughout the training process which result in high validation accuracy will help to ensure that you will not lose information gained throughout the training process. Throughout the rest of this notebook we will implement a process where we save our best performing model we have produced so far.</p>
 <p>To implement this in our pipeline we first implement a function called <code class="docutils literal notranslate"><span class="pre">load_checkpoint</span></code> which will load a saved version of our model using <code class="docutils literal notranslate"><span class="pre">torch.load</span></code>.</p>
 <div class="cell docutils container">
@@ -783,6 +783,7 @@ document.write(`
     <span class="c1"># Learning rate reducer takes action ##</span>
     <span class="c1">#######################################</span>
     <span class="n">scheduler</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">val_loss</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;lr for this epoch is </span><span class="si">{</span><span class="n">scheduler</span><span class="o">.</span><span class="n">get_last_lr</span><span class="p">()</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
 
     <span class="n">avg_loss</span><span class="p">,</span> <span class="n">avg_acc</span> <span class="o">=</span> <span class="n">avg_loss</span><span class="o">/</span><span class="n">n</span><span class="p">,</span> <span class="n">avg_acc</span><span class="o">/</span><span class="n">n</span>
     
@@ -822,44 +823,55 @@ document.write(`
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Prev Best Val Acc: 0.0 &lt; Cur Val Acc: 0.706768810749054
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>lr for this epoch is [0.0001]
+
+Prev Best Val Acc: 0.0 &lt; Cur Val Acc: 0.698616623878479
 Saving the new best model...
 Finished saving model
 
 
-(Epoch 1/5) Time: 414s
-(Epoch 1/5) Average train loss: 0.054781472485467615, Average train accuracy: 0.6099397540092468
-(Epoch 1/5) Val loss: 0.04778964817523956, Val accuracy: 0.706768810749054
-(Epoch 1/5) Current best val acc: 0.706768810749054
+(Epoch 1/5) Time: 411s
+(Epoch 1/5) Average train loss: 0.055991143006158164, Average train accuracy: 0.6024096012115479
+(Epoch 1/5) Val loss: 0.04682241007685661, Val accuracy: 0.698616623878479
+(Epoch 1/5) Current best val acc: 0.698616623878479
 
+lr for this epoch is [0.0001]
 
-Prev Best Val Acc: 0.706768810749054 &lt; Cur Val Acc: 0.7895256876945496
+Prev Best Val Acc: 0.698616623878479 &lt; Cur Val Acc: 0.7638339996337891
 Saving the new best model...
 Finished saving model
 
 
 (Epoch 2/5) Time: 410s
-(Epoch 2/5) Average train loss: 0.04340849735560905, Average train accuracy: 0.7557228207588196
-(Epoch 2/5) Val loss: 0.04375723376870155, Val accuracy: 0.7895256876945496
-(Epoch 2/5) Current best val acc: 0.7895256876945496
+(Epoch 2/5) Average train loss: 0.04354576942881187, Average train accuracy: 0.7448794841766357
+(Epoch 2/5) Val loss: 0.04492916166782379, Val accuracy: 0.7638339996337891
+(Epoch 2/5) Current best val acc: 0.7638339996337891
+
+lr for this epoch is [0.0001]
+
+Prev Best Val Acc: 0.7638339996337891 &lt; Cur Val Acc: 0.780138373374939
+Saving the new best model...
+Finished saving model
 
 
-(Epoch 3/5) Time: 410s
-(Epoch 3/5) Average train loss: 0.03606990118432476, Average train accuracy: 0.8379518389701843
-(Epoch 3/5) Val loss: 0.05057337507605553, Val accuracy: 0.73097825050354
-(Epoch 3/5) Current best val acc: 0.7895256876945496
+(Epoch 3/5) Time: 409s
+(Epoch 3/5) Average train loss: 0.0374780154057655, Average train accuracy: 0.8299698233604431
+(Epoch 3/5) Val loss: 0.044687770307064056, Val accuracy: 0.780138373374939
+(Epoch 3/5) Current best val acc: 0.780138373374939
 
+lr for this epoch is [0.0001]
 
-(Epoch 4/5) Time: 408s
-(Epoch 4/5) Average train loss: 0.03369753223855093, Average train accuracy: 0.8668674230575562
-(Epoch 4/5) Val loss: 0.042350128293037415, Val accuracy: 0.7623517513275146
-(Epoch 4/5) Current best val acc: 0.7895256876945496
+(Epoch 4/5) Time: 405s
+(Epoch 4/5) Average train loss: 0.03239582747849355, Average train accuracy: 0.8787650465965271
+(Epoch 4/5) Val loss: 0.050802767276763916, Val accuracy: 0.728507936000824
+(Epoch 4/5) Current best val acc: 0.780138373374939
 
+lr for this epoch is [0.0001]
 
-(Epoch 5/5) Time: 411s
-(Epoch 5/5) Average train loss: 0.029927182439939082, Average train accuracy: 0.8981927633285522
-(Epoch 5/5) Val loss: 0.05253813788294792, Val accuracy: 0.7161561250686646
-(Epoch 5/5) Current best val acc: 0.7895256876945496
+(Epoch 5/5) Time: 408s
+(Epoch 5/5) Average train loss: 0.031860928318227635, Average train accuracy: 0.8873493671417236
+(Epoch 5/5) Val loss: 0.04592260718345642, Val accuracy: 0.7732213139533997
+(Epoch 5/5) Current best val acc: 0.780138373374939
 </pre></div>
 </div>
 </div>

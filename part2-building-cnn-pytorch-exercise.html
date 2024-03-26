@@ -674,7 +674,7 @@ document.write(`
 <section id="setting-up-checkpoints">
 <h3>Setting up Checkpoints<a class="headerlink" href="#setting-up-checkpoints" title="Link to this heading">#</a></h3>
 <p>Training deep learning models can take a lot of computational power.  Additionally, you may not create an optimally performing model at the end of the training process.  For example, you may not initially select a sufficient number of epochs, have an underfit model, and need to resume your model training.  Conversely, you could select to many epochs and have a model that has overfit your data (See figure below)</p>
-<a class="reference internal image-reference" href="Image/fitting.png"><img alt="Image/fitting.png" src="Image/fitting.png" style="width: 500px; height: 300px;" /></a>
+<a class="reference internal image-reference" href="_images/fitting.png"><img alt="_images/fitting.png" src="_images/fitting.png" style="width: 500px; height: 300px;" /></a>
 <p>In either scenario, having a mechanism in place to save the models produced throughout the training process which result in high validation accuracy will help to ensure that you will not lose information gained throughout the training process. Throughout the rest of this notebook we will implement a process where we save our best performing model we have produced so far.</p>
 <p>To implement this in our pipeline we first implement a function called <code class="docutils literal notranslate"><span class="pre">load_checkpoint</span></code> which will load a saved version of our model using <code class="docutils literal notranslate"><span class="pre">torch.load</span></code>.</p>
 <div class="cell docutils container">
