@@ -649,8 +649,8 @@ document.write(`
 <h4>Label smoothing<a class="headerlink" href="#label-smoothing" title="Link to this heading">#</a></h4>
 <p>Typically when performing classification we “one hot encode” the label we are trying to predict into a numerical representation that is typically integers. For example if we are predicting cats versus dogs in images, cats could represent 0 and dogs would be represented by 1.  The most helpful classifiers predict probabilities of an outcome.  That is, the model predicting 0.6 in the example above would mean there is a 60% chance that the image is a dog.</p>
 <p>Label smoothing is a regularization technique that introdcues some noise into the labels in our training data.  In label smoothing, we alter the numerical representations of our data to decrease the confidence that an an existing image is of a particular class in our training set.  A parameter called <code class="docutils literal notranslate"><span class="pre">label_smoothing</span></code>, or $\alpha$, controls how much we decrease the confidence an image is of a particular class via the following equation:</p>
-<div class="amsmath math notranslate nohighlight" id="equation-899968a2-e222-4db6-be29-88bcbc0b39b9">
-<span class="eqno">(1)<a class="headerlink" href="#equation-899968a2-e222-4db6-be29-88bcbc0b39b9" title="Permalink to this equation">#</a></span>\[\begin{align}
+<div class="amsmath math notranslate nohighlight" id="equation-d49b1730-fa96-4e28-84d8-3d987e794108">
+<span class="eqno">(1)<a class="headerlink" href="#equation-d49b1730-fa96-4e28-84d8-3d987e794108" title="Permalink to this equation">#</a></span>\[\begin{align}
 label_{soft}=label_{hard}(1-\alpha)+\frac{\alpha}{nc}
 \end{align}\]</div>
 <p>where nc is the number of classes being predicted in your classifier. Using the cat and dog classifier as an example and assuming we use a label_smoothing=0.1 we find the following new numerical representations of our labels.</p>
