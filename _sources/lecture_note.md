@@ -112,12 +112,12 @@ $$f(w_t;x)={\frac{1}{n}}\sum_{i=1}^nL(h(x_i), y_i)$$
 $$w_{t+1} = w_t - \alpha\nabla f(w_t;x)$$
 
 Backpropagation is used to calculate the gradient of weight. Fortunately, manual derivation for gradients of different neural networks is not needed. All ML/DL frameworks (e.g. PyTorch and Tensorflow) have auto-derivation engine, which is usually implemented based on computation graph and backprop.
-```{image} images/Picture7.png
+```{image} images/Picture7.gif
 :alt: traditional_method
 :height: 175px
 :align: center
 ```
-Image source: {cite}`Cornell5775`
+Image source: {cite}`backprop`
 
 
 (softmax)=
