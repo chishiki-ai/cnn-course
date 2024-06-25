@@ -1,0 +1,1084 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Introduction to DDP with Pytorch &#8212; Building CNN Classifiers at Scale</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../_static/styles/bootstrap.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+
+  
+  <link href="../_static/vendor/fontawesome/6.5.2/css/all.min.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/sphinx-book-theme.css?v=a3416100" />
+    <link rel="stylesheet" type="text/css" href="../_static/togglebutton.css?v=13237357" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-thebe.css?v=4fa983c6" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=87e54e7c" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
+  <script src="../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+    <script src="../_static/documentation_options.js?v=9eb32ce0"></script>
+    <script src="../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../_static/copybutton.js?v=f281be69"></script>
+    <script src="../_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
+    <script>let toggleHintShow = 'Click to show';</script>
+    <script>let toggleHintHide = 'Click to hide';</script>
+    <script>let toggleOpenOnPrint = 'true';</script>
+    <script src="../_static/togglebutton.js?v=4a39c7ea"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script src="../_static/design-tabs.js?v=f930bc37"></script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
+    <script async="async" src="../_static/sphinx-thebe.js?v=c100c467"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'scaling_part1/ddp_intro';</script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Single Node MultiGPU Training with Torchrun" href="../scaling_part2/pytorch_torchrun_designsafe.html" />
+    <link rel="prev" title="Building a CNN Classifier with PyTorch: Part 2" href="../part2-building-cnn-pytorch-solution.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-primary-sidebar-checkbox"/>
+  <label class="overlay overlay-primary" for="pst-primary-sidebar-checkbox"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-secondary-sidebar-checkbox"/>
+  <label class="overlay overlay-secondary" for="pst-secondary-sidebar-checkbox"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search this book..."
+         aria-label="Search this book..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../README.html">
+  
+  
+  
+  
+  
+  
+    <p class="title logo__title">Building CNN Classifiers at Scale</p>
+  
+</a></div>
+        <div class="sidebar-primary-item">
+
+ <script>
+ document.write(`
+   <button class="btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        
+        <ul class="nav bd-sidenav bd-sidenav__home-link">
+            <li class="toctree-l1">
+                <a class="reference internal" href="../README.html">
+                    Building Scalable CNN models
+                </a>
+            </li>
+        </ul>
+        <ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../lecture_note.html">Image Classification and Convolutional Neural Network</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intro-building-cnn-pytorch-solution.html">Building a CNN Classifier with PyTorch: Part 1</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../part2-building-cnn-pytorch-solution.html">Building a CNN Classifier with PyTorch: Part 2</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">Introduction to DDP with Pytorch</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../scaling_part2/pytorch_torchrun_designsafe.html">Single Node MultiGPU Training with Torchrun</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../scaling_part3/multinode.html">Multi node Distributed training with PyTorch</a></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><button class="sidebar-toggle primary-toggle btn btn-sm" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</button></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+
+
+
+<div class="dropdown dropdown-source-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Source repositories">
+    <i class="fab fa-github"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="https://github.com/chishiki-ai/cnn-course" target="_blank"
+   class="btn btn-sm btn-source-repository-button dropdown-item"
+   title="Source repository"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+<span class="btn__text-container">Repository</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li><a href="https://github.com/chishiki-ai/cnn-course/issues/new?title=Issue%20on%20page%20%2Fscaling_part1/ddp_intro.html&body=Your%20issue%20content%20here." target="_blank"
+   class="btn btn-sm btn-source-issues-button dropdown-item"
+   title="Open an issue"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-lightbulb"></i>
+  </span>
+<span class="btn__text-container">Open issue</span>
+</a>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+
+
+<div class="dropdown dropdown-download-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Download this page">
+    <i class="fas fa-download"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="../_sources/scaling_part1/ddp_intro.ipynb" target="_blank"
+   class="btn btn-sm btn-download-source-button dropdown-item"
+   title="Download source file"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="btn__text-container">.ipynb</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li>
+<button onclick="window.print()"
+  class="btn btn-sm btn-download-pdf-button dropdown-item"
+  title="Print to PDF"
+  data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="btn__text-container">.pdf</span>
+</button>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
+  </button>
+`);
+</script>
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm pst-navbar-icon search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+  </button>
+`);
+</script>
+<button class="sidebar-toggle secondary-toggle btn btn-sm" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</button>
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>Introduction to DDP with Pytorch</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#introduction-to-parallel-computing-on-hpc">Introduction to Parallel Computing on HPC</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#distributed-data-parallel-ddp">Distributed Data Parallel (DDP)</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id1">Introduction to DDP with Pytorch</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#create-process-group">Create Process Group</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#create-data-distributedsampler">Create Data DistributedSampler</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#wrap-model-with-distributeddataparallel">Wrap Model with DistributedDataParallel</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#train-model">Train Model</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#clean-up-process-group">Clean Up Process Group</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#summary">Summary</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#mnist-example">MNIST Example</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#non-distributed-code">Non-Distributed Code</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#get-data">Get Data</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#build-network">Build network</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id2">Train Model</a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#distributed-code-for-multiple-gpus-on-one-node">Distributed Code for Multiple GPUs on One Node.</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id3">Summary</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#exercise">Exercise</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#references">References</a></li>
+</ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="introduction-to-ddp-with-pytorch">
+<h1>Introduction to DDP with Pytorch<a class="headerlink" href="#introduction-to-ddp-with-pytorch" title="Link to this heading">#</a></h1>
+<p>Training neural networks is an expensive computational task that is getting even more expensize.  In figure [1] (obtained from Reference [1]), we can see how the size of neural networks have grown exponentially over time.  As the number of parameters increase the training times also increase. Using multiple GPUs is critical for training deep learning models.</p>
+<img alt="../_images/size_networks.png" src="../_images/size_networks.png" />
+<p>The aim of this tutorial is to introduce the basics of parallel computation and implement a method called distributed data parallel with Pytorch that runs on one node with multiple GPUs. Specifically, we will cover the following material:</p>
+<ul class="simple">
+<li><p>Introduce parallel computing at HPC centers</p></li>
+<li><p>Introduce the basics of Distributed Data Parallel (DDP)</p></li>
+<li><p>Highlight major code modifications needed to scale non-distributed model training scripts with Pytorch’s DDP</p></li>
+<li><p>Modify code from a simple MNIST Classifier example to run at scale using DDP</p></li>
+</ul>
+<section id="introduction-to-parallel-computing-on-hpc">
+<h2>Introduction to Parallel Computing on HPC<a class="headerlink" href="#introduction-to-parallel-computing-on-hpc" title="Link to this heading">#</a></h2>
+<center>
+<img src="https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Flemppics.lemp.io%2F1665137786138.png&f=1&nofb=1&ipt=6385ec8c79507458c881bb4706bf1603dec5b5ced981ca2efe6dcd4d085da2bf&ipo=images" width="300"><br>
+<b>Figure 2.</b> Serial versus Parallel Computation
+<br>
+</center>
+Traditionally, software has been written for serial computation where we solve a problem by executing a set of instructions sequentially on a single processor.  In parallel computation, multiple computational resources are leveraged simulateously to solve a problem and thus requires multiple processers to run. There are many problems in science and engineering the require parallel computation that run on computational resources beyond those available on our laptops, including training neural networks.  High Performance Computing (HPC) centers are a resource we can use to get access to potentially thousands of computer to execute code.    
+<center>
+<img src="https://docs.tacc.utexas.edu/basics/imgs/login-compute-nodes.jpg" width="500"><br>
+<b>Figure 3.</b> Login vs Compute Nodes
+<br>
+</center>
+<p>HPC centers, like the texas advanced computing center (TACC), host several supercomputers.  Supercomputers, or computer clusters, are a group of interconnected computers such that they can act like a single machine.  The various computers that make up the computer cluster are <strong>nodes</strong> which come in two types: login and compute.  Login nodes are those that you interact with in logging on to our machines via <a class="reference external" href="https://www.geeksforgeeks.org/introduction-to-sshsecure-shell-keys/">SSH</a> and are used for routine task like modifying and organizing files.  Compute nodes are where the actual calculations are done and what we will utilize to parallelize the training of neural networks.  There could be different types of compute nodes, for example different types of CPU and GPUs, but we will focus on utilizing GPUs in this tutorial as Pytorch is optimized to run on GPUs.  A GPU node typically consists of multiple GPUs.  Each GPU on a node is identified with a unique integer referred to as <strong>local rank</strong> (See figure 4).</p>
+<img alt="../_images/local_rank_global_rank.png" src="../_images/local_rank_global_rank.png" />
+<p><b>Figure 4.</b> Local Rank</p>
+<p>Pytorch has tools for checking the number and types of GPUs available.  For example, you can check if GPUs are avaiable with <code class="docutils literal notranslate"><span class="pre">is_available()</span></code>. You can determine the number of GPUs you have available via <code class="docutils literal notranslate"><span class="pre">device_count()</span></code>. You can also determine the local rank of the device you are currently using with <code class="docutils literal notranslate"><span class="pre">current_device()</span></code>.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s1">&#39;GPUs are available = </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">is_available</span><span class="p">()))</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s1">&#39;The number of GPUs available are </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">device_count</span><span class="p">()))</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s1">&#39;You are currently using GPU with local rank = </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">current_device</span><span class="p">()))</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>In this notebook, we will introduce how to parallelize the training process of a CNN classifier across multiple GPUs on a single node.  One of the main challenges of parallelising code is that there is often a need for the various processes to communicate with one another. Let’s say for example I want to solve the following set of equations:</p>
+<p>$$A = B * C$$
+$$D = E * F$$
+$$G = A * D$$</p>
+<p>One way to parallize solving this simple set of equations is to use two processors to compute $A$ and $D$.  There are a few things that need  to happen after $A$ and $D$ are computed on the 2 processors:</p>
+<ol class="arabic simple">
+<li><p><strong>Synchronization:</strong> Both processes wait until all members of the group have reached the synchronization point. Both $A$ and $D$ need to both have been computed to move on to computing $G$.  Synchronization can be a time bottleneck in parallel computing.</p></li>
+<li><p><strong>Data Movement</strong> - Once $A$ and $D$ have been been computed, the values of A and D need to reside on the same processor.  This is where data movement comes in (see figure 5 for examples of different types of data movement).</p></li>
+<li><p><strong>Collective Computation</strong> - In this example one processor collects data (values of A and D) and performs an operation (min, max, add, multiply, etc.) on that data.</p></li>
+</ol>
+<center>
+<img src="https://hpc-tutorials.llnl.gov/mpi/images/collective_comm.gif" width="400"><br>
+<b>Figure 5.</b> Types of Data Movement
+<br>
+</center>
+<p>All 3 of these steps typically need to be programmed when building parallelized code and can often be time bottlenecks.</p>
+<p>Now that we have introduced a little bit about parallel computation, HPC terminology and how communication works, let’s look at one algorithm which is used to parallelize the training of neural networks, Distributed Data Parallel (DDP).</p>
+</section>
+<section id="distributed-data-parallel-ddp">
+<h2>Distributed Data Parallel (DDP)<a class="headerlink" href="#distributed-data-parallel-ddp" title="Link to this heading">#</a></h2>
+<p>Before we dive into how DDP works, let’s review what the typical training process entails using a single GPU.  One step in the process of training a neural network consist of the following:</p>
+<ol class="arabic simple">
+<li><p>Receive an input batch and complete a forward pass to compute the loss associated with your current weights</p></li>
+<li><p>Based of of [1], complete a backward pass where gradients associated with your current weights and batch are computed</p></li>
+<li><p>Update weights based on gradients from [2] and selected optimization algorithm</p></li>
+</ol>
+<p>Steps 1-3 described above and visually represented in figure 6 are repeated iteratively until a minimal loss is achieved or computing resources run out.</p>
+<img alt="../_images/singlegpu.png" src="../_images/singlegpu.png" />
+<p><b>Figure 6.</b>  Visual representation of one step in training a neural metwork with one GPU.</p>
+<p>One popular technique to scale the training process, or modify the training process so that we are leveraging multiple GPUs, is called distirbuted data parallel (DDP).  In DDP, each GPU being used launches one process where each GPU contains a local copy of the model being optimized. Then, a different randomly generated batch of data is sent to each GPU and the forward and backward passes are computed.</p>
+<p>One option for the next step would be to updated model weights on each GPU.  However, this would result in different model weights as the loss and gradients computed should all be different on each GPU as different data was used.  Instead, all gradients are synchronized by averaging  gradients from each GPU and sent back to the individual GPUs via an Allreduce operation. The Allreduce operation is where the synchronization, data movement and collective communications come into play in DDP:</p>
+<ol class="arabic simple">
+<li><p>Synchronization: wait until all GPUs have computed their gradients</p></li>
+<li><p>Data Movement: Move data so that average gradient can be computed and then broadcast back to all GPUs.</p></li>
+<li><p>Collective Computation: averaging gradients from each gpu</p></li>
+</ol>
+<p>Performing the Allreduce operation of the gradients ensures that when the weights are updated on each GPU, that the models remain equivalent. This process is repeated throughout the training process with DDP. A visual representation of one iteration of DDP is shown in figure 7.</p>
+<p><a class="reference internal" href="../_images/multigpu.png"><img alt="../_images/multigpu.png" src="../_images/multigpu.png" style="width: 600px;" /></a><br></p>
+<p><b>Figure 7.</b> Visual representation of one iteration of DDP using 3 GPUs.</p>
+</section>
+<section id="id1">
+<h2>Introduction to DDP with Pytorch<a class="headerlink" href="#id1" title="Link to this heading">#</a></h2>
+<p>Next, we will introduce how to convert a non-distributed training script into a distributed training script that uses Pytorch’s DDP. The  major modifications needed to scale a Pytorch training script are as follows:</p>
+<ol class="arabic simple">
+<li><p>Create a process group</p></li>
+<li><p>Use Pytorch’s DistributedSampler to ensure that data passed to each GPU is different</p></li>
+<li><p>Wrap Model with Pytorch’s DistributedDataParallel</p></li>
+<li><p>Modify Training Loop to write model from one GPU</p></li>
+<li><p>Close process group</p></li>
+</ol>
+<p>Next, let’s dive into each of the modifications above in more detail.</p>
+<section id="create-process-group">
+<h3>Create Process Group<a class="headerlink" href="#create-process-group" title="Link to this heading">#</a></h3>
+<p>The first step to scaling a pytorch script is to set up a process group – that is establishing the group of processors that will be used so that the processors can communicate.  This can be done via the <code class="docutils literal notranslate"><span class="pre">torch.distributed.init_process_group</span></code> method.</p>
+<p>Below is an example of how to set up the process group locally.  First, we set environment variables for the IP address for the rank 0 process and a free port.  Later on in this tutorial we will give an example of how this can be set up for an HPC cluster.</p>
+<p>Note, we set the device prior to setting up the process group. This is important to prevent hangs or excessive mememory utilization.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch.distributed</span> <span class="k">as</span> <span class="nn">dist</span>
+<span class="k">def</span> <span class="nf">init_distributed</span><span class="p">(</span><span class="n">local_rank</span><span class="p">,</span> <span class="n">world_size</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    local_rank: identifier for pariticular GPU on one node</span>
+<span class="sd">    world: total number of process in a the group</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s1">&#39;MASTER_ADDR&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;localhost&#39;</span>           <span class="c1"># IP address of rank 0 process</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s1">&#39;MASTER_PORT&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;12355&#39;</span>               <span class="c1"># a free port used to communicate amongst processors</span>
+    <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">set_device</span><span class="p">(</span><span class="n">local_rank</span><span class="p">)</span>                       <span class="c1">#</span>
+    <span class="n">dist</span><span class="o">.</span><span class="n">init_process_group</span><span class="p">(</span><span class="s2">&quot;nccl&quot;</span><span class="p">,</span>                   <span class="c1"># backend being used; nccl typically used with distributed GPU training</span>
+                            <span class="n">rank</span><span class="o">=</span><span class="n">local_rank</span><span class="p">,</span>                <span class="c1"># rank of the current process being used</span>
+                            <span class="n">world_size</span><span class="o">=</span><span class="n">world_size</span><span class="p">)</span>    <span class="c1"># total number of processors being used</span>
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="create-data-distributedsampler">
+<h3>Create Data DistributedSampler<a class="headerlink" href="#create-data-distributedsampler" title="Link to this heading">#</a></h3>
+<p>The purpose of the DistributedSampler is to distribute data amongst the various processes. It ensures that the batch that each GPU receives is different. The distributed sampler passes an iterator that sends data to the various processes.</p>
+<p>In the code snippet below, we use the DataLoader as we saw in the previous notebook, but we pass the <code class="docutils literal notranslate"><span class="pre">DistributedSampler</span></code> via the sampler argument.  We also change shuffle from True to False. Note, in the example below each GPU would receive a batch size of 32 data samples.  Thus, the actual batch size would be number_gpu * 32.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">torch.utils.data.distributed</span> <span class="kn">import</span> <span class="n">DistributedSampler</span>
+
+<span class="k">def</span> <span class="nf">load_dataset</span><span class="p">(</span><span class="n">train_dataset</span><span class="p">):</span>
+    <span class="n">train_data</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">DataLoader</span><span class="p">(</span>
+        <span class="n">dataset</span><span class="o">=</span><span class="n">train_dataset</span><span class="p">,</span>
+        <span class="n">batch_size</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span>
+        <span class="c1">#################################################</span>
+        <span class="n">shuffle</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>                             <span class="c1"># shuffle should be set to False when using DistributedSampler</span>
+        <span class="n">sampler</span><span class="o">=</span><span class="n">DistributedSampler</span><span class="p">(</span><span class="n">train_dataset</span><span class="p">),</span> <span class="c1"># passing the distributed loader</span>
+        <span class="c1">################################################</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">train_data</span>
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="wrap-model-with-distributeddataparallel">
+<h3>Wrap Model with DistributedDataParallel<a class="headerlink" href="#wrap-model-with-distributeddataparallel" title="Link to this heading">#</a></h3>
+<p>In order to use Pytorch’s Distributed Data Parallel we need to wrap our model (e.g. resnet18) with the <code class="docutils literal notranslate"><span class="pre">DDP</span></code> wraper.  In the function below we combine instantiating our process group, setting up the distributed sampler, and wrapping our model with DDP into one function.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">torch.nn.parallel</span> <span class="kn">import</span> <span class="n">DistributedDataParallel</span> <span class="k">as</span> <span class="n">DDP</span>
+
+<span class="k">def</span> <span class="nf">main</span><span class="p">(</span><span class="n">local_rank</span><span class="p">,</span> <span class="n">world_size</span><span class="p">):</span>
+    <span class="c1"># setup the process groups</span>
+    <span class="n">setup</span><span class="p">(</span><span class="n">local_rank</span><span class="p">,</span> <span class="n">world_size</span><span class="p">)</span>    
+    <span class="c1"># prepare the dataloader with the DistributedSampler</span>
+    <span class="n">train_data</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">DataLoader</span><span class="p">(</span><span class="n">dataset</span><span class="o">=</span><span class="n">train_dataset</span><span class="p">,</span>
+                                             <span class="n">batch_size</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span>
+                                             <span class="n">shuffle</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                                             <span class="n">shuffle</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                                             <span class="c1">##########################################</span>
+                                             <span class="n">sampler</span><span class="o">=</span><span class="n">DistributedSampler</span><span class="p">(</span><span class="n">train_dataset</span><span class="p">),</span>
+                                             <span class="c1">###########################################</span>
+                                            <span class="p">)</span>
+    
+    <span class="c1"># instantiate the model(in our case resnet18) and move it to the right device</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">resnet18</span><span class="p">(</span><span class="n">weights</span><span class="o">=</span><span class="s2">&quot;IMAGENET1K_V1&quot;</span><span class="p">)</span> <span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">local_rank</span><span class="p">)</span>
+
+    <span class="c1">###############################</span>
+    <span class="c1"># wrap the model with DDP   </span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">DDP</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> 
+                <span class="n">device_ids</span><span class="o">=</span><span class="p">[</span><span class="n">local_rank</span><span class="p">],</span>                  <span class="c1"># list of gpu that model lives on </span>
+                <span class="n">output_device</span><span class="o">=</span><span class="n">local_rank</span><span class="p">,</span>                 <span class="c1"># where to output model</span>
+                <span class="p">)</span>        
+    <span class="c1">###############################</span>
+</pre></div>
+</div>
+<p>Note that when we wrap our model with DDP we will need to modify other code where  access that state of our model.  Previously when we wanted to access a model’s <code class="docutils literal notranslate"><span class="pre">.state_dict()</span></code> we would do this by calling the following method of our model:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">model</span><span class="o">.</span><span class="n">state_dict</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>When the model has been wrapped with DDP we would need to make the following modification:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">model</span><span class="o">.</span><span class="n">modules</span><span class="o">.</span><span class="n">state_dict</span><span class="p">()</span>
+</pre></div>
+</div>
+</section>
+<section id="train-model">
+<h3>Train Model<a class="headerlink" href="#train-model" title="Link to this heading">#</a></h3>
+<p>When saving our model’s checkpoints throughout the training process and using DDP, by default models on each GPU are saved.  This is unnecessarily redudant.  To fix this we can modify our train function to only save our model’s state_dict from one of our GPUs. The pseudocode below highlights this modification.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">train</span><span class="p">(</span><span class="o">..</span><span class="p">):</span>
+    <span class="n">rank</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s1">&#39;RANK&#39;</span><span class="p">])</span>
+    <span class="k">for</span> <span class="n">epoch</span> <span class="ow">in</span> <span class="n">epochs</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">batch</span> <span class="ow">in</span> <span class="n">batches</span><span class="p">:</span>
+            <span class="n">step</span><span class="p">(</span><span class="o">...</span><span class="p">)</span><span class="o">.</span> <span class="c1"># forward pass, backward pass, update weights</span>
+        <span class="c1">###################################################</span>
+        <span class="c1"># only save model state from one GPU </span>
+        <span class="k">if</span> <span class="n">rank</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="c1">###################################################</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">save</span><span class="p">({</span>
+                    <span class="s1">&#39;epoch&#39;</span><span class="p">:</span><span class="n">epoch</span><span class="p">,</span>
+                    <span class="s1">&#39;machine&#39;</span><span class="p">:</span><span class="n">local_rank</span><span class="p">,</span>
+                    <span class="s1">&#39;model_state_dict&#39;</span><span class="p">:</span><span class="n">model</span><span class="o">.</span><span class="n">module</span><span class="o">.</span><span class="n">state_dict</span><span class="p">(),</span>
+                    <span class="s1">&#39;accuracy&#39;</span><span class="p">:</span><span class="n">val_acc</span><span class="p">,</span>
+                    <span class="s1">&#39;loss&#39;</span><span class="p">:</span><span class="n">val_loss</span>
+            <span class="p">},</span> <span class="n">checkpoint_file</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="clean-up-process-group">
+<h3>Clean Up Process Group<a class="headerlink" href="#clean-up-process-group" title="Link to this heading">#</a></h3>
+<p>Once, we have trained our model we can destroy the process group using the function below.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch.distributed</span> <span class="k">as</span> <span class="nn">dist</span>
+
+<span class="k">def</span> <span class="nf">cleanup</span><span class="p">():</span>
+    <span class="n">dist</span><span class="o">.</span><span class="n">destroy_process_group</span><span class="p">()</span>
+</pre></div>
+</div>
+</section>
+<section id="summary">
+<h3>Summary<a class="headerlink" href="#summary" title="Link to this heading">#</a></h3>
+<p>In the above text we highlighted the major modifications that needed to scale a pytorch script to multiple GPUs. Next, we will code a simple neural network training script and modify it to use DDP.</p>
+</section>
+</section>
+<section id="mnist-example">
+<h2>MNIST Example<a class="headerlink" href="#mnist-example" title="Link to this heading">#</a></h2>
+<p>Let’s start by creating code that trains a classifier for the MNIST dataset.  We will then modify this code to run in parallel. For simplicity we will leave out code that evalaute our model with testing data.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch</span> 
+<span class="kn">from</span> <span class="nn">torch.utils.data</span> <span class="kn">import</span> <span class="n">DataLoader</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span> 
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">import</span> <span class="nn">torchvision</span>
+<span class="kn">import</span> <span class="nn">torch.nn</span> <span class="k">as</span> <span class="nn">nn</span>
+<span class="kn">import</span> <span class="nn">torch.nn.functional</span> <span class="k">as</span> <span class="nn">F</span>
+</pre></div>
+</div>
+</div>
+</div>
+<section id="non-distributed-code">
+<h3>Non-Distributed Code<a class="headerlink" href="#non-distributed-code" title="Link to this heading">#</a></h3>
+<section id="get-data">
+<h4>Get Data<a class="headerlink" href="#get-data" title="Link to this heading">#</a></h4>
+<p>In the function below we dowload the MNIST dataset and pass it to a dataloader.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">prepare_data</span><span class="p">(</span><span class="n">batch_size</span><span class="o">=</span><span class="mi">32</span><span class="p">):</span>
+
+    <span class="c1"># download MNIST dataset</span>
+    <span class="n">trainset</span> <span class="o">=</span> <span class="n">torchvision</span><span class="o">.</span><span class="n">datasets</span><span class="o">.</span><span class="n">MNIST</span><span class="p">(</span>
+                            <span class="n">root</span><span class="o">=</span><span class="s2">&quot;data&quot;</span><span class="p">,</span>                                        <span class="c1"># path to where data is stored</span>
+                            <span class="n">train</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>                                         <span class="c1"># specifies if data is train or test</span>
+                            <span class="n">download</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>                                      <span class="c1"># downloads data if not available at root</span>
+                            <span class="n">transform</span><span class="o">=</span><span class="n">torchvision</span><span class="o">.</span><span class="n">transforms</span><span class="o">.</span><span class="n">ToTensor</span><span class="p">()</span>         <span class="c1"># trasforms both features and targets accordingly</span>
+                            <span class="p">)</span>
+    <span class="c1"># pass dataset to the dataloader</span>
+    <span class="n">train_dataloader</span> <span class="o">=</span> <span class="n">DataLoader</span><span class="p">(</span><span class="n">trainset</span><span class="p">,</span>
+                                  <span class="n">shuffle</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                                  <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">train_dataloader</span>
+
+<span class="n">trainloader</span><span class="o">=</span><span class="n">prepare_data</span><span class="p">(</span><span class="n">batch_size</span><span class="o">=</span><span class="mi">32</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>Next, let’s visualize a few images from the MNIST dataset.  If you are unfamiliar with the MNIST data set you can learn more about it <a class="reference external" href="https://en.wikipedia.org/wiki/MNIST_database">here</a>.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">imshow</span><span class="p">(</span><span class="n">img</span><span class="p">):</span>
+    <span class="n">npimg</span> <span class="o">=</span> <span class="n">img</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">npimg</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">)))</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+
+<span class="c1"># get some random training images</span>
+<span class="n">dataiter</span> <span class="o">=</span> <span class="nb">iter</span><span class="p">(</span><span class="n">trainloader</span><span class="p">)</span>
+<span class="n">images</span><span class="p">,</span> <span class="n">labels</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="n">dataiter</span><span class="p">)</span>
+
+<span class="c1"># show images</span>
+<span class="n">imshow</span><span class="p">(</span><span class="n">torchvision</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">make_grid</span><span class="p">(</span><span class="n">images</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="build-network">
+<h4>Build network<a class="headerlink" href="#build-network" title="Link to this heading">#</a></h4>
+<p>Next, we build a network that will be used to train our model.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Net</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">Net</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">flatten</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Flatten</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">linear_relu_stack</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="mi">28</span><span class="o">*</span><span class="mi">28</span><span class="p">,</span> <span class="mi">128</span><span class="p">),</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">(),</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Dropout</span><span class="p">(</span><span class="mf">0.2</span><span class="p">),</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="mi">128</span><span class="p">,</span> <span class="mi">10</span><span class="p">),</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">flatten</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">prob</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">linear_relu_stack</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">prob</span>
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="id2">
+<h4>Train Model<a class="headerlink" href="#id2" title="Link to this heading">#</a></h4>
+<p>Below we create two functions.  The first called <code class="docutils literal notranslate"><span class="pre">train_loop</span></code> performs an epoch in the training process.  The second function called <code class="docutils literal notranslate"><span class="pre">main</span></code> does everything we need to train a model: download and setup a dataloader, instatiate our model, loss and optizer, and finally run multiple epochs by calling the <code class="docutils literal notranslate"><span class="pre">train_loop</span></code> function.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">train_loop</span><span class="p">(</span><span class="n">device</span><span class="p">,</span> <span class="n">dataloader</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">loss_fn</span><span class="p">,</span> <span class="n">optimizer</span><span class="p">):</span>
+    <span class="n">size</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">dataloader</span><span class="o">.</span><span class="n">dataset</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">batch</span><span class="p">,</span> <span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">dataloader</span><span class="p">):</span>
+        <span class="c1"># transfer data to GPU if available</span>
+        <span class="n">X</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="n">y</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+
+        <span class="c1"># Compute prediction and loss</span>
+        <span class="n">pred</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+        <span class="n">loss</span> <span class="o">=</span> <span class="n">loss_fn</span><span class="p">(</span><span class="n">pred</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+        <span class="c1"># Backpropagation</span>
+        <span class="n">optimizer</span><span class="o">.</span><span class="n">zero_grad</span><span class="p">()</span>
+        <span class="n">loss</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>
+        <span class="n">optimizer</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">batch</span> <span class="o">%</span> <span class="mi">1000</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">loss</span><span class="p">,</span> <span class="n">current</span> <span class="o">=</span> <span class="n">loss</span><span class="o">.</span><span class="n">item</span><span class="p">(),</span> <span class="n">batch</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;loss: </span><span class="si">{</span><span class="n">loss</span><span class="si">:</span><span class="s2">&gt;7f</span><span class="si">}</span><span class="s2">  [</span><span class="si">{</span><span class="n">current</span><span class="si">:</span><span class="s2">&gt;5d</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">size</span><span class="si">:</span><span class="s2">&gt;5d</span><span class="si">}</span><span class="s2">]&quot;</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">main</span><span class="p">(</span><span class="n">device</span><span class="p">):</span>
+
+    <span class="c1"># Setup Dataloader</span>
+    <span class="n">train_dataloader</span><span class="o">=</span><span class="n">prepare_data</span><span class="p">(</span><span class="n">batch_size</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+    
+    <span class="c1"># Instantiate Model </span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">Net</span><span class="p">()</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+    
+    <span class="c1"># instantiate loss and optimizer </span>
+    <span class="n">loss_fn</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">CrossEntropyLoss</span><span class="p">()</span> 
+    <span class="n">optimizer</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">Adam</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">lr</span><span class="o">=</span><span class="mf">0.001</span><span class="p">)</span>
+
+    <span class="c1"># Train Model </span>
+    <span class="n">epochs</span> <span class="o">=</span> <span class="mi">3</span>
+    <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">epochs</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Epoch </span><span class="si">{</span><span class="n">t</span><span class="o">+</span><span class="mi">1</span><span class="si">}</span><span class="se">\n</span><span class="s2">-------------------------------&quot;</span><span class="p">)</span>
+        <span class="n">train_loop</span><span class="p">(</span><span class="n">device</span><span class="p">,</span> <span class="n">train_dataloader</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">loss_fn</span><span class="p">,</span> <span class="n">optimizer</span><span class="p">)</span>
+        
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Done!&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">model</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>Finally, let’s train our model by calling the <code class="docutils literal notranslate"><span class="pre">main</span></code> function.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">device</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s1">&#39;cuda:0&#39;</span> <span class="k">if</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">is_available</span><span class="p">()</span> <span class="k">else</span> <span class="s1">&#39;cpu&#39;</span><span class="p">)</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">main</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+</section>
+<section id="distributed-code-for-multiple-gpus-on-one-node">
+<h3>Distributed Code for Multiple GPUs on One Node.<a class="headerlink" href="#distributed-code-for-multiple-gpus-on-one-node" title="Link to this heading">#</a></h3>
+<p>Note we will re-use the code from above and modify it to use Pytorch’s DDP.  As we mentioned previously there are five main modifications needed to run DDP:</p>
+<ol class="arabic simple">
+<li><p>Create a process group</p></li>
+<li><p>Use Pytorch’s DistributedSampler to ensure that data passed to each GPU is different</p></li>
+<li><p>Wrap Model with Pytorch’s DistributedDataParallel</p></li>
+<li><p>Modify Training Loop to write model from one GPU</p></li>
+<li><p>Close process group</p></li>
+</ol>
+<p>The modifications needed for the five changes highlighted above are visually denoted with two lines of <code class="docutils literal notranslate"><span class="pre">#</span></code>.  Note, we reuse the class for <code class="docutils literal notranslate"><span class="pre">Net</span></code> defined in the serial version above.  Note that in the serial code we use the variable <code class="docutils literal notranslate"><span class="pre">device</span></code> to refer to the gpu or cpu we are using to run the code.  In the distributed implementation we will use the variables <code class="docutils literal notranslate"><span class="pre">local_rank</span></code> and <code class="docutils literal notranslate"><span class="pre">world_size</span></code> where:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">local_rank</span></code>: the device id of a gpu on one node</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">world_size</span></code>: the number of gpus on one node.</p></li>
+</ul>
+<p>Note, world size will change when we use multiple nodes later on in this course.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1">#################################################</span>
+<span class="c1"># 1. Create a process group (function)</span>
+<span class="k">def</span> <span class="nf">init_distributed</span><span class="p">(</span><span class="n">local_rank</span><span class="p">,</span> <span class="n">world_size</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    local_rank: identifier for pariticular GPU on one node</span>
+<span class="sd">    world: total number of process in a the group</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s1">&#39;MASTER_ADDR&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;localhost&#39;</span>           <span class="c1"># IP address of rank 0 process</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s1">&#39;MASTER_PORT&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;12355&#39;</span>               <span class="c1"># a free port used to communicate amongst processors</span>
+    <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">set_device</span><span class="p">(</span><span class="n">local_rank</span><span class="p">)</span>                       <span class="c1">#</span>
+    <span class="n">dist</span><span class="o">.</span><span class="n">init_process_group</span><span class="p">(</span><span class="s2">&quot;nccl&quot;</span><span class="p">,</span>                   <span class="c1"># backend being used; nccl typically used with distributed GPU training</span>
+                            <span class="n">rank</span><span class="o">=</span><span class="n">local_rank</span><span class="p">,</span>          <span class="c1"># rank of the current process being used</span>
+                            <span class="n">world_size</span><span class="o">=</span><span class="n">world_size</span><span class="p">)</span>    <span class="c1"># total number of processors being used</span>
+<span class="c1">#################################################  </span>
+    
+<span class="k">def</span> <span class="nf">prepare_data</span><span class="p">(</span><span class="n">local_rank</span><span class="p">,</span> <span class="n">world_size</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">32</span><span class="p">):</span>
+
+    <span class="n">trainset</span> <span class="o">=</span> <span class="n">torchvision</span><span class="o">.</span><span class="n">datasets</span><span class="o">.</span><span class="n">MNIST</span><span class="p">(</span>
+                            <span class="n">root</span><span class="o">=</span><span class="s2">&quot;data&quot;</span><span class="p">,</span>                                        <span class="c1"># path to where data is stored</span>
+                            <span class="n">train</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>                                         <span class="c1"># specifies if data is train or test</span>
+                            <span class="n">download</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>                                      <span class="c1"># downloads data if not available at root</span>
+                            <span class="n">transform</span><span class="o">=</span><span class="n">torchvision</span><span class="o">.</span><span class="n">transforms</span><span class="o">.</span><span class="n">ToTensor</span><span class="p">()</span>         <span class="c1"># trasforms both features and targets accordingly</span>
+                            <span class="p">)</span>
+
+    <span class="c1"># pass data to the distributed sampler and dataloader</span>
+    <span class="n">train_dataloader</span> <span class="o">=</span> <span class="n">DataLoader</span><span class="p">(</span><span class="n">trainset</span><span class="p">,</span>
+                                  <span class="c1">################################################</span>
+                                  <span class="c1"># 2. Setup Dataloader with Distributed Sampler</span>
+                                  <span class="n">shuffle</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                                  <span class="n">sampler</span><span class="o">=</span><span class="n">DistributedSampler</span><span class="p">(</span><span class="n">trainset</span><span class="p">,</span> <span class="n">num_replicas</span><span class="o">=</span><span class="n">world_size</span><span class="p">,</span> <span class="n">rank</span><span class="o">=</span><span class="n">local_rank</span><span class="p">),</span>
+                                  <span class="c1">################################################</span>
+                                  <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">train_dataloader</span>
+
+<span class="c1"># training loop for one epoch</span>
+<span class="k">def</span> <span class="nf">train_loop</span><span class="p">(</span><span class="n">local_rank</span><span class="p">,</span> <span class="n">dataloader</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">loss_fn</span><span class="p">,</span> <span class="n">optimizer</span><span class="p">):</span>
+    <span class="n">size</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">dataloader</span><span class="o">.</span><span class="n">dataset</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">batch</span><span class="p">,</span> <span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">dataloader</span><span class="p">):</span>
+        <span class="c1"># transfer data to GPU if available</span>
+        <span class="n">X</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">local_rank</span><span class="p">)</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="n">y</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">local_rank</span><span class="p">)</span>
+
+        <span class="c1"># Compute prediction and loss</span>
+        <span class="n">pred</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+        <span class="n">loss</span> <span class="o">=</span> <span class="n">loss_fn</span><span class="p">(</span><span class="n">pred</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+        <span class="c1"># Backpropagation</span>
+        <span class="n">optimizer</span><span class="o">.</span><span class="n">zero_grad</span><span class="p">()</span>
+        <span class="n">loss</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>
+        <span class="n">optimizer</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
+
+        <span class="c1">################################################</span>
+        <span class="c1"># 4. Only write/print model information on one GPU</span>
+        <span class="k">if</span> <span class="n">local_rank</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">batch</span> <span class="o">%</span> <span class="mi">100</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">loss</span><span class="p">,</span> <span class="n">current</span> <span class="o">=</span> <span class="n">loss</span><span class="o">.</span><span class="n">item</span><span class="p">(),</span> <span class="n">batch</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;loss: </span><span class="si">{</span><span class="n">loss</span><span class="si">:</span><span class="s2">&gt;7f</span><span class="si">}</span><span class="s2">  [</span><span class="si">{</span><span class="n">current</span><span class="si">:</span><span class="s2">&gt;5d</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">size</span><span class="si">:</span><span class="s2">&gt;5d</span><span class="si">}</span><span class="s2">]&quot;</span><span class="p">)</span>
+        <span class="c1">################################################</span>
+
+<span class="k">def</span> <span class="nf">main</span><span class="p">(</span><span class="n">local_rank</span><span class="p">,</span> <span class="n">world_size</span><span class="p">):</span>
+    <span class="c1">################################################</span>
+    <span class="c1"># 1. Set up Process Group</span>
+    <span class="n">init_distributed</span><span class="p">(</span><span class="n">local_rank</span><span class="p">,</span> <span class="n">world_size</span><span class="p">)</span>
+    <span class="c1">################################################</span>
+
+    <span class="c1">################################################</span>
+    <span class="c1"># 2. Setup Dataloader with Distributed Sampler</span>
+    <span class="n">train_dataloader</span> <span class="o">=</span> <span class="n">prepare_data</span><span class="p">(</span><span class="n">local_rank</span><span class="p">,</span> <span class="n">world_size</span><span class="p">)</span>
+    <span class="c1">################################################</span>
+
+    <span class="c1">################################################</span>
+    <span class="c1"># 3. Wrap Model with DDP</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">DDP</span><span class="p">(</span><span class="n">Net</span><span class="p">()</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">local_rank</span><span class="p">),</span>
+        <span class="n">device_ids</span><span class="o">=</span><span class="p">[</span><span class="n">local_rank</span><span class="p">],</span>                  <span class="c1"># list of gpu that model lives on</span>
+        <span class="n">output_device</span><span class="o">=</span><span class="n">local_rank</span><span class="p">,</span>                 <span class="c1"># where to output model</span>
+    <span class="p">)</span>
+    <span class="c1">################################################</span>
+
+    <span class="c1"># instantiate loss and optimizer</span>
+    <span class="n">loss_fn</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">CrossEntropyLoss</span><span class="p">()</span> <span class="c1">#torch.nn.MSELoss(reduction=&#39;mean&#39;)</span>
+    <span class="n">optimizer</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">Adam</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">lr</span><span class="o">=</span><span class="mf">0.001</span><span class="p">)</span>
+
+    <span class="c1"># Train Model</span>
+    <span class="n">epochs</span> <span class="o">=</span> <span class="mi">10</span>
+    <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">epochs</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Epoch </span><span class="si">{</span><span class="n">t</span><span class="o">+</span><span class="mi">1</span><span class="si">}</span><span class="se">\n</span><span class="s2">-------------------------------&quot;</span><span class="p">)</span>
+        <span class="n">train_loop</span><span class="p">(</span><span class="n">local_rank</span><span class="p">,</span> <span class="n">train_dataloader</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">loss_fn</span><span class="p">,</span> <span class="n">optimizer</span><span class="p">)</span>
+
+    <span class="c1">#################################################</span>
+    <span class="c1"># 5. Close Process Group</span>
+    <span class="n">dist</span><span class="o">.</span><span class="n">destroy_process_group</span><span class="p">()</span>
+    <span class="c1">#################################################</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Done!&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">model</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>To run this code in parallel we will utilize the <code class="docutils literal notranslate"><span class="pre">torch.multiprocessing</span></code> package which is a wrapper around Python’s native multiprocessing module. In particular, we will use the <code class="docutils literal notranslate"><span class="pre">spawn</span></code> method.  Spawn creates new processes from the parent process but will only inherit the resources necessary to run the <code class="docutils literal notranslate"><span class="pre">run()</span></code> method. Below we highlight the code used to execute training in a python script called <code class="docutils literal notranslate"><span class="pre">mnist_demo.py</span></code> that we will run to execute the parallel implemention of this code.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="n">world_size</span><span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">device_count</span><span class="p">()</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;world_size = </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">world_size</span><span class="p">))</span>
+    <span class="n">mp</span><span class="o">.</span><span class="n">spawn</span><span class="p">(</span><span class="n">main</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">world_size</span><span class="p">,)</span> <span class="p">,</span> <span class="n">nprocs</span><span class="o">=</span><span class="n">world_size</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Finally we can run train the MNIST classifier using DDP.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">!</span>python<span class="w"> </span>mnist_parallel.py
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+</section>
+<section id="id3">
+<h2>Summary<a class="headerlink" href="#id3" title="Link to this heading">#</a></h2>
+<p>In this notebook we covered the basics of how Distributed Data Parallel (DDP) works, highlighted major code modifications needed to convert a serial training script into a distributed training script, and made these modifications for a simple example.  In the next script we will discuss fault tolerance and apply the content covered in this tutorial to the training of the DesignSafe Image Classifier example.</p>
+</section>
+<section id="exercise">
+<h2>Exercise<a class="headerlink" href="#exercise" title="Link to this heading">#</a></h2>
+<p>There is a script called <code class="docutils literal notranslate"><span class="pre">simple_linear_regression_serial.py</span></code> that implements a simple linear regression model with Pytorch. Modify this script to run on multiple GPUs on one node using Pytorch’s DDP.</p>
+</section>
+<section id="references">
+<h2>References<a class="headerlink" href="#references" title="Link to this heading">#</a></h2>
+<ol class="arabic simple">
+<li><p>https://www.nature.com/articles/s41598-021-82543-3</p></li>
+<li><p>https://arxiv.org/abs/2006.15704</p></li>
+<li><p>https://pytorch.org/tutorials/beginner/ddp_series_theory.html</p></li>
+</ol>
+</section>
+</section>
+
+    <script type="text/x-thebe-config">
+    {
+        requestKernel: true,
+        binderOptions: {
+            repo: "binder-examples/jupyter-stacks-datascience",
+            ref: "master",
+        },
+        codeMirrorConfig: {
+            theme: "abcdef",
+            mode: "python"
+        },
+        kernelOptions: {
+            name: "python3",
+            path: "./scaling_part1"
+        },
+        predefinedOutput: true
+    }
+    </script>
+    <script>kernelName = 'python3'</script>
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="../part2-building-cnn-pytorch-solution.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Building a CNN Classifier with PyTorch: Part 2</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="../scaling_part2/pytorch_torchrun_designsafe.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Single Node MultiGPU Training with Torchrun</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#introduction-to-parallel-computing-on-hpc">Introduction to Parallel Computing on HPC</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#distributed-data-parallel-ddp">Distributed Data Parallel (DDP)</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id1">Introduction to DDP with Pytorch</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#create-process-group">Create Process Group</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#create-data-distributedsampler">Create Data DistributedSampler</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#wrap-model-with-distributeddataparallel">Wrap Model with DistributedDataParallel</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#train-model">Train Model</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#clean-up-process-group">Clean Up Process Group</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#summary">Summary</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#mnist-example">MNIST Example</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#non-distributed-code">Non-Distributed Code</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#get-data">Get Data</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#build-network">Build network</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id2">Train Model</a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#distributed-code-for-multiple-gpus-on-one-node">Distributed Code for Multiple GPUs on One Node.</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id3">Summary</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#exercise">Exercise</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#references">References</a></li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By Krishna Kumar and TACC team
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright 2023.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b"></script>
+<script src="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>

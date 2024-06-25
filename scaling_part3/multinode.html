@@ -1,0 +1,1052 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Multi node Distributed training with PyTorch &#8212; Building CNN Classifiers at Scale</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../_static/styles/bootstrap.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+
+  
+  <link href="../_static/vendor/fontawesome/6.5.2/css/all.min.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/sphinx-book-theme.css?v=a3416100" />
+    <link rel="stylesheet" type="text/css" href="../_static/togglebutton.css?v=13237357" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-thebe.css?v=4fa983c6" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=87e54e7c" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
+  <script src="../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+    <script src="../_static/documentation_options.js?v=9eb32ce0"></script>
+    <script src="../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../_static/copybutton.js?v=f281be69"></script>
+    <script src="../_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
+    <script>let toggleHintShow = 'Click to show';</script>
+    <script>let toggleHintHide = 'Click to hide';</script>
+    <script>let toggleOpenOnPrint = 'true';</script>
+    <script src="../_static/togglebutton.js?v=4a39c7ea"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script src="../_static/design-tabs.js?v=f930bc37"></script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
+    <script async="async" src="../_static/sphinx-thebe.js?v=c100c467"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'scaling_part3/multinode';</script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="prev" title="Single Node MultiGPU Training with Torchrun" href="../scaling_part2/pytorch_torchrun_designsafe.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-primary-sidebar-checkbox"/>
+  <label class="overlay overlay-primary" for="pst-primary-sidebar-checkbox"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-secondary-sidebar-checkbox"/>
+  <label class="overlay overlay-secondary" for="pst-secondary-sidebar-checkbox"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search this book..."
+         aria-label="Search this book..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../README.html">
+  
+  
+  
+  
+  
+  
+    <p class="title logo__title">Building CNN Classifiers at Scale</p>
+  
+</a></div>
+        <div class="sidebar-primary-item">
+
+ <script>
+ document.write(`
+   <button class="btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        
+        <ul class="nav bd-sidenav bd-sidenav__home-link">
+            <li class="toctree-l1">
+                <a class="reference internal" href="../README.html">
+                    Building Scalable CNN models
+                </a>
+            </li>
+        </ul>
+        <ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../lecture_note.html">Image Classification and Convolutional Neural Network</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intro-building-cnn-pytorch-solution.html">Building a CNN Classifier with PyTorch: Part 1</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../part2-building-cnn-pytorch-solution.html">Building a CNN Classifier with PyTorch: Part 2</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../scaling_part1/ddp_intro.html">Introduction to DDP with Pytorch</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../scaling_part2/pytorch_torchrun_designsafe.html">Single Node MultiGPU Training with Torchrun</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">Multi node Distributed training with PyTorch</a></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><button class="sidebar-toggle primary-toggle btn btn-sm" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</button></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+
+
+
+<div class="dropdown dropdown-source-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Source repositories">
+    <i class="fab fa-github"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="https://github.com/chishiki-ai/cnn-course" target="_blank"
+   class="btn btn-sm btn-source-repository-button dropdown-item"
+   title="Source repository"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+<span class="btn__text-container">Repository</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li><a href="https://github.com/chishiki-ai/cnn-course/issues/new?title=Issue%20on%20page%20%2Fscaling_part3/multinode.html&body=Your%20issue%20content%20here." target="_blank"
+   class="btn btn-sm btn-source-issues-button dropdown-item"
+   title="Open an issue"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-lightbulb"></i>
+  </span>
+<span class="btn__text-container">Open issue</span>
+</a>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+
+
+<div class="dropdown dropdown-download-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Download this page">
+    <i class="fas fa-download"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="../_sources/scaling_part3/multinode.ipynb" target="_blank"
+   class="btn btn-sm btn-download-source-button dropdown-item"
+   title="Download source file"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="btn__text-container">.ipynb</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li>
+<button onclick="window.print()"
+  class="btn btn-sm btn-download-pdf-button dropdown-item"
+  title="Print to PDF"
+  data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="btn__text-container">.pdf</span>
+</button>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
+  </button>
+`);
+</script>
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm pst-navbar-icon search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+  </button>
+`);
+</script>
+<button class="sidebar-toggle secondary-toggle btn btn-sm" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</button>
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>Multi node Distributed training with PyTorch</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#multi-node-motivation">Multi node motivation</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#review-parallel-computing-on-hpc">Review Parallel Computing on HPC</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#review-pytorch-ddp">Review PyTorch DDP</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#outline-of-this-notebook">Outline of this notebook</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#multi-node-application-with-pytorch-distributed-message-exchanging-example">Multi node application with PyTorch Distributed: message exchanging example</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#communication-backend-for-torch-distributed">Communication backend for torch.distributed</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#launching-multi-node-distributed-training-how-to-set-the-environment-variables">Launching Multi node distributed Training: how to set the environment variables</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#torchrun">Torchrun</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#set-environment-variable-with-mpirun-and-slurm">Set Environment Variable with mpirun and SLURM</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#message-passing-interface-mpi">Message Passing Interface (MPI)</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#mpirun-command">mpirun command</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#slurm">SLURM</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#point-to-point-communication-vs-collective-communication">Point-to-Point Communication vs. Collective Communication</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#design-safe-resnet-case-study-train-on-multiple-nodes">Design Safe ResNet Case Study: Train on Multiple Nodes</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#resnet-training">ResNet Training</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#single-node">Single node:</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#multi-node">Multi node:</a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#data-preparation">Data Preparation</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#launch-training-script-in-containerized-environment">Launch training script in containerized environment</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#compare-performance">Compare Performance</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#summary">Summary</a></li>
+</ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="multi-node-distributed-training-with-pytorch">
+<h1>Multi node Distributed training with PyTorch<a class="headerlink" href="#multi-node-distributed-training-with-pytorch" title="Link to this heading">#</a></h1>
+<section id="multi-node-motivation">
+<h2>Multi node motivation<a class="headerlink" href="#multi-node-motivation" title="Link to this heading">#</a></h2>
+<p>In the previous parts, we learned that training deep learning models with multiple GPUs is critical as the number of parameters for neural networks grow. The same logic of using more compute resource to speed things up motivates us to scale further up beyond resources on one node or one machine.</p>
+<p>Before we learn about multi node training, let’s first review some notions from previous part of the tutorial.</p>
+</section>
+<section id="review-parallel-computing-on-hpc">
+<h2>Review Parallel Computing on HPC<a class="headerlink" href="#review-parallel-computing-on-hpc" title="Link to this heading">#</a></h2>
+<img alt="../_images/login-compute-nodes-jupyter.jpg" src="../_images/login-compute-nodes-jupyter.jpg" />
+<p><em>Login vs Compute Nodes</em></p>
+<p>HPC centers, like TACC, host several supercomputers. Supercomputers, or computer clusters, are a group of interconnected computers such that they can act like a single machine. The various computers that make up the computer cluster are nodes which come in two types: login and compute. Login nodes are those that you interact with in logging on to our machines via SSH and are used for routine task like modifying and organizing files. Compute nodes are where the actual calculations are done and what we will utilize to parallelize the training of neural networks. A GPU node typically consists of multiple GPUs.</p>
+<p>The TACC Analysis Portal (TAP) provides simplified access to interactive sessions on TACC large-scale computing resources. TAP targets users who want the convenience of web-based portal access. TAP-Supported applications including Jupyter Notebook.</p>
+</section>
+<section id="review-pytorch-ddp">
+<h2>Review PyTorch DDP<a class="headerlink" href="#review-pytorch-ddp" title="Link to this heading">#</a></h2>
+<p>In the previouse notebook, we have done distributed training with PyTorch DistributedDataParallel (DDP) on multiple GPUs residing on one node. DDP can also run across multiple nodes.</p>
+<p>DDP uses collective communications in the torch.distributed package to synchronize gradients and buffers. More specifically, DDP registers an autograd <a class="reference external" href="https://www.youtube.com/watch?v=syLFCVYua6Q">hook</a> for each parameter given by model.parameters() and the hook will fire when the corresponding gradient is computed in the backward pass. Then DDP uses that signal to trigger gradient synchronization across processes.</p>
+<p><img alt="../_images/Overview-of-DDP-training-Each-process-independently-loads-and-processes-a-batch-of-data.png" src="../_images/Overview-of-DDP-training-Each-process-independently-loads-and-processes-a-batch-of-data.png" />[1]</p>
+<p><em>Overview of DDP training. Each process independently loads and processes a batch of data and synchronizes local gradients with others through a gradient aggregation process which requires global communications.</em></p>
+<p>The basic idea behind DDP is following - we create processes that replicate a job for multiple times. PyTorch DDP uses <code class="docutils literal notranslate"><span class="pre">torch.distributed.init_process_group</span></code> method to set up a process group, and distributes data amongst processes with DistributedSampler. It also prepares model impletation with DDP wrapper.</p>
+<p>We are introduced to some environment variables that glue the training environment together: WORLD_SIZE, GLOBAL_RANK and LOCAL_RANK. They are fancy names for “total number of GPUs in your job”, “the ID for the GPU in your cluster” and “the local ID for the GPU in a node”.</p>
+</section>
+<section id="outline-of-this-notebook">
+<h2>Outline of this notebook<a class="headerlink" href="#outline-of-this-notebook" title="Link to this heading">#</a></h2>
+<p>This tutorial will approach multi node distributed training using PyTorch with the following steps:</p>
+<ul class="simple">
+<li><p>Message exchanging example with PyTorch DDP</p>
+<ul>
+<li><p>Torchrun</p></li>
+<li><p>Set Environment Variable with mpirun and SLURM</p></li>
+</ul>
+</li>
+<li><p>Design Safe ResNet Case Study</p>
+<ul>
+<li><p>Major code modifications for ResNet Training</p></li>
+<li><p>Data preparation</p></li>
+<li><p>Launch training script in containerized environment</p></li>
+</ul>
+</li>
+</ul>
+</section>
+<section id="multi-node-application-with-pytorch-distributed-message-exchanging-example">
+<h2>Multi node application with PyTorch Distributed: message exchanging example<a class="headerlink" href="#multi-node-application-with-pytorch-distributed-message-exchanging-example" title="Link to this heading">#</a></h2>
+<p>Before we work on training a machine learning model across multiple nodes, I would first give you an idea of how to use PyTorch to communicate between nodes. As a introduction for writing distributed PyTorch application across multiple nodes, let’s walk through an example of message exchanging on multiple nodes with PyTorch DDP. The code example is based on <a class="reference external" href="https://pytorch.org/tutorials/intermediate/dist_tuto.html">this PyTorch tutorial</a>.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch.distributed</span> <span class="k">as</span> <span class="nn">dist</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">torch</span>
+
+<span class="c1"># In a single node setting, LOCAL_RANK is sufficient to identify a process</span>
+<span class="n">LOCAL_RANK</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s1">&#39;LOCAL_RANK&#39;</span><span class="p">])</span>
+<span class="c1"># In multiple nodes setting, each node has local rank starting from zero, see figure below</span>
+<span class="n">GLOBAL_RANK</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s1">&#39;RANK&#39;</span><span class="p">])</span>
+<span class="n">WORLD_SIZE</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s1">&#39;WORLD_SIZE&#39;</span><span class="p">])</span>
+
+<span class="k">def</span> <span class="nf">run</span><span class="p">():</span>
+    <span class="n">tensor</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+    
+    <span class="c1"># LOCAL_RANK is used by run function to assign a GPU device to the worker</span>
+    <span class="c1"># Send tensor to GPU device</span>
+    <span class="n">device</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s2">&quot;cuda:</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">LOCAL_RANK</span><span class="p">))</span>
+    <span class="n">tensor</span> <span class="o">=</span> <span class="n">tensor</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">GLOBAL_RANK</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">rank_recv</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">WORLD_SIZE</span><span class="p">):</span>
+            <span class="n">dist</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">tensor</span><span class="o">=</span><span class="n">tensor</span><span class="p">,</span> <span class="n">dst</span><span class="o">=</span><span class="n">rank_recv</span><span class="p">)</span>
+            <span class="c1"># Here we use global rank to identify which process is printing</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;worker_</span><span class="si">{}</span><span class="s1"> sent data to Rank </span><span class="si">{}</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">rank_recv</span><span class="p">))</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">dist</span><span class="o">.</span><span class="n">recv</span><span class="p">(</span><span class="n">tensor</span><span class="o">=</span><span class="n">tensor</span><span class="p">,</span> <span class="n">src</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;worker_</span><span class="si">{}</span><span class="s1"> has received data from rank </span><span class="si">{}</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">GLOBAL_RANK</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+
+<span class="k">def</span> <span class="nf">init_processes</span><span class="p">():</span>
+    <span class="c1"># Establishing the group of processors that will be used so that the processors can communicate </span>
+    <span class="c1"># the worker will be identified as worker $GLOBAL_RANK among a gourp of $WORLD_SIZE workers</span>
+    <span class="c1"># backend specifies the library (nccl) that implement fast communication between workers</span>
+    <span class="n">dist</span><span class="o">.</span><span class="n">init_process_group</span><span class="p">(</span><span class="n">backend</span><span class="o">=</span><span class="s2">&quot;nccl&quot;</span><span class="p">,</span> <span class="c1">#backend being used; &quot;nccl&quot; for using GPUs. See details below.</span>
+                          <span class="n">world_size</span><span class="o">=</span><span class="n">WORLD_SIZE</span><span class="p">,</span> <span class="c1">#total number of processors being used</span>
+                          <span class="n">rank</span><span class="o">=</span><span class="n">GLOBAL_RANK</span><span class="p">)</span>  <span class="c1">#rank of the current process being used</span>
+    <span class="n">run</span><span class="p">()</span>
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="n">init_processes</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>If we launch the python script on 2 nodes on Frontera rtx-dev nodes, each equiped with 4 GPUs,</p>
+<p>WORLD_SIZE, which is total number of GPUs in your job, is 8,</p>
+<p>GLOBAL_RANK, which is the ID for the GPU in your cluster, is [0, 1, 2, 3, 4, 5, 6, 7].</p>
+<p>LOCAL_RANK, which is the local ID for the GPU in a node, is [0, 1, 2, 3].</p>
+<p><a class="reference internal" href="../_images/local_rank_global_rank1.png"><img alt="../_images/local_rank_global_rank1.png" src="../_images/local_rank_global_rank1.png" style="width: 500px;" /></a> [3]
+<a class="reference internal" href="../_images/local_rank_global_rank2.jpg"><img alt="../_images/local_rank_global_rank2.jpg" src="../_images/local_rank_global_rank2.jpg" style="width: 500px;" /></a> [3]</p>
+<p>Let’s assume we have these variables set for us already.</p>
+<section id="communication-backend-for-torch-distributed">
+<h3>Communication backend for torch.distributed<a class="headerlink" href="#communication-backend-for-torch-distributed" title="Link to this heading">#</a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">torch.distributed</span></code> supports several built-in backends.</p>
+<p>In our code we specified our communication backend to be “NCCL” <code class="docutils literal notranslate"> <span class="pre">dist.init_process_group(backend=&quot;nccl&quot;)</span></code>.</p>
+<p>The NVIDIA Collective Communication Library (NCCL) implements multi-GPU and multi-node communication primitives optimized for NVIDIA GPUs and Networking. NCCL provides routines such as all-gather, all-reduce, broadcast, reduce, reduce-scatter as well as point-to-point send and receive that are optimized to achieve high bandwidth and low latency over PCIe and NVLink high-speed interconnects within a node and over NVIDIA Mellanox Network across nodes.</p>
+<p>If we were running our application on hardware equipped with CPU only, the NCCL backend, which is exclusively developed for NVIDIA GPUs, would not work. We would need to change to the ‘gloo’ backend for communication between CPUs <code class="docutils literal notranslate"> <span class="pre">dist.init_process_group(backend=&quot;gloo&quot;)</span></code>.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">!</span><span class="w"> </span>mpirun<span class="w"> </span>-np<span class="w"> </span><span class="m">2</span><span class="w"> </span>-ppn<span class="w"> </span><span class="m">1</span><span class="w"> </span>message_passing.sh<span class="w"> </span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Training command: /opt/apps/tacc-apptainer/1.1.8/bin/apptainer exec --nv --bind /run/user:/run/user /scratch1/07980/sli4/containers/cnn_course.sif  torchrun --nproc_per_node 4 --nnodes 2 --node_rank=0 --master_addr=c196-022 --master_port=1234 message_passing.py
+Training command: /opt/apps/tacc-apptainer/1.1.8/bin/apptainer exec --nv --bind /run/user:/run/user /scratch1/07980/sli4/containers/cnn_course.sif  torchrun --nproc_per_node 4 --nnodes 2 --node_rank=1 --master_addr=c196-022 --master_port=1234 message_passing.py
+13:4: not a valid test operator: (
+13:4: not a valid test operator: 535.113.01
+13:4: not a valid test operator: (
+13:4: not a valid test operator: 535.113.01
+/home1/07980/sli4/.bashrc: line 1: module: command not found
+/home1/07980/sli4/.bashrc: line 2: module: command not found
+/home1/07980/sli4/.bashrc: line 3: module: command not found
+[rank4]:[W ProcessGroupNCCL.cpp:2302] Warning: 0TORCH_NCCL_AVOID_RECORD_STREAMS=1 has no effect for point-to-point collectives. (function operator())
+[rank5]:[W ProcessGroupNCCL.cpp:2302] Warning: 0TORCH_NCCL_AVOID_RECORD_STREAMS=1 has no effect for point-to-point collectives. (function operator())
+[rank6]:[W ProcessGroupNCCL.cpp:2302] Warning: 0TORCH_NCCL_AVOID_RECORD_STREAMS=1 has no effect for point-to-point collectives. (function operator())
+[rank7]:[W ProcessGroupNCCL.cpp:2302] Warning: 0TORCH_NCCL_AVOID_RECORD_STREAMS=1 has no effect for point-to-point collectives. (function operator())
+[rank3]:[W ProcessGroupNCCL.cpp:2302] Warning: 0TORCH_NCCL_AVOID_RECORD_STREAMS=1 has no effect for point-to-point collectives. (function operator())
+[rank0]:[W ProcessGroupNCCL.cpp:2302] Warning: 0TORCH_NCCL_AVOID_RECORD_STREAMS=1 has no effect for point-to-point collectives. (function operator())
+[rank2]:[W ProcessGroupNCCL.cpp:2302] Warning: 0TORCH_NCCL_AVOID_RECORD_STREAMS=1 has no effect for point-to-point collectives. (function operator())
+[rank1]:[W ProcessGroupNCCL.cpp:2302] Warning: 0TORCH_NCCL_AVOID_RECORD_STREAMS=1 has no effect for point-to-point collectives. (function operator())
+worker_0 sent data to Rank 1
+
+worker_1 has received data from rank 0
+
+worker_0 sent data to Rank 2
+
+worker_2 has received data from rank 0
+
+worker_0 sent data to Rank 3
+
+worker_3 has received data from rank 0
+
+worker_0 sent data to Rank 4
+
+worker_4 has received data from rank 0
+
+worker_0 sent data to Rank 5
+
+worker_5 has received data from rank 0
+
+^C
+[mpiexec@c196-022.frontera.tacc.utexas.edu] Sending Ctrl-C to processes as requested
+[mpiexec@c196-022.frontera.tacc.utexas.edu] Press Ctrl-C again to force abort
+[2024-06-24 12:53:57,571] torch.distributed.elastic.agent.server.api: [WARNING] Received Signals.SIGINT death signal, shutting down workers
+[2024-06-24 12:53:57,571] torch.distributed.elastic.agent.server.api: [WARNING] Received Signals.SIGINT death signal, shutting down workers
+[2024-06-24 12:53:57,571] torch.distributed.elastic.multiprocessing.api: [WARNING] Sending process 18116 closing signal SIGINT
+[2024-06-24 12:53:57,571] torch.distributed.elastic.multiprocessing.api: [WARNING] Sending process 7318 closing signal SIGINT
+[2024-06-24 12:53:57,571] torch.distributed.elastic.multiprocessing.api: [WARNING] Sending process 18117 closing signal SIGINT
+[2024-06-24 12:53:57,571] torch.distributed.elastic.multiprocessing.api: [WARNING] Sending process 18118 closing signal SIGINT
+[2024-06-24 12:53:57,571] torch.distributed.elastic.multiprocessing.api: [WARNING] Sending process 7319 closing signal SIGINT
+[2024-06-24 12:53:57,571] torch.distributed.elastic.multiprocessing.api: [WARNING] Sending process 7320 closing signal SIGINT
+[2024-06-24 12:53:57,571] torch.distributed.elastic.multiprocessing.api: [WARNING] Sending process 18119 closing signal SIGINT
+[2024-06-24 12:53:57,571] torch.distributed.elastic.multiprocessing.api: [WARNING] Sending process 7321 closing signal SIGINT
+Traceback (most recent call last):
+  File &quot;/home1/07980/sli4/cnn-course-scale/part3/message_passing.py&quot;, line 31, in &lt;module&gt;
+    init_processes()
+  File &quot;/home1/07980/sli4/cnn-course-scale/part3/message_passing.py&quot;, line 28, in init_processes
+    run()
+  File &quot;/home1/07980/sli4/cnn-course-scale/part3/message_passing.py&quot;, line 18, in run
+    dist.send(tensor=tensor, dst=rank_recv)
+  File &quot;/usr/local/lib/python3.10/dist-packages/torch/distributed/c10d_logger.py&quot;, line 72, in wrapper
+  File &quot;/usr/local/lib/python3.10/dist-packages/torch/distributed/distributed_c10d.py&quot;, line 1635, in send
+KeyboardInterrupt
+Traceback (most recent call last):
+  File &quot;/home1/07980/sli4/cnn-course-scale/part3/message_passing.py&quot;, line 31, in &lt;module&gt;
+    init_processes()
+  File &quot;/home1/07980/sli4/cnn-course-scale/part3/message_passing.py&quot;, line 28, in init_processes
+    run()
+  File &quot;/home1/07980/sli4/cnn-course-scale/part3/message_passing.py&quot;, line 21, in run
+    dist.recv(tensor=tensor, src=0)
+  File &quot;/usr/local/lib/python3.10/dist-packages/torch/distributed/c10d_logger.py&quot;, line 72, in wrapper
+  File &quot;/usr/local/lib/python3.10/dist-packages/torch/distributed/distributed_c10d.py&quot;, line 1678, in recv
+KeyboardInterrupt
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="launching-multi-node-distributed-training-how-to-set-the-environment-variables">
+<h3>Launching Multi node distributed Training: how to set the environment variables<a class="headerlink" href="#launching-multi-node-distributed-training-how-to-set-the-environment-variables" title="Link to this heading">#</a></h3>
+<p>To set the environment variables including WORLD_SIZE, GLOBAL_RANK and LOCAL_RANK, we need to use mpirun and torchrun together.</p>
+</section>
+<section id="torchrun">
+<h3>Torchrun<a class="headerlink" href="#torchrun" title="Link to this heading">#</a></h3>
+<p>To run multi node jobs, we need to <code class="docutils literal notranslate"><span class="pre">torchrun</span></code> on each node. A <code class="docutils literal notranslate"><span class="pre">torchrun</span></code> command needs these environment variables to be set:</p>
+<p>nproc-per-node: Number of workers per node</p>
+<p>nnodes: Number of nodes</p>
+<p>node-rank: Rank of the node for multi-node distributed training</p>
+<p>master-addr: Address of the master node (rank 0). Here it is the hostname of rank 0.</p>
+<p>master-port: Port on the master node (rank 0) to be used for communication during distributed training.</p>
+<p><code class="docutils literal notranslate"><span class="pre">torchrun</span></code> will create WORLD_SIZE, GLOBAL_RANK and LOCAL_RANK for each worker.</p>
+<p>If we want to launch our job on two nodes (c000-001 and c000-002), we need to ssh into the two nodes and run the following commands:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># on c000-001 (the master node)</span>
+<span class="n">torchrun</span> <span class="o">--</span><span class="n">nproc_per_node</span> <span class="mi">4</span> <span class="o">--</span><span class="n">nnodes</span> <span class="mi">2</span> <span class="o">--</span><span class="n">node_rank</span><span class="o">=</span><span class="mi">0</span> <span class="o">--</span><span class="n">master_addr</span><span class="o">=</span><span class="n">c000</span><span class="o">-</span><span class="mi">001</span> <span class="o">--</span><span class="n">master_port</span><span class="o">=</span><span class="mi">1234</span> <span class="n">message_passing</span><span class="o">.</span><span class="n">py</span>
+
+<span class="c1"># on c000-002 (the workder node)</span>
+<span class="c1"># the only difference in the argument is node rank</span>
+<span class="n">torchrun</span> <span class="o">--</span><span class="n">nproc_per_node</span> <span class="mi">4</span> <span class="o">--</span><span class="n">nnodes</span> <span class="mi">2</span> <span class="o">--</span><span class="n">node_rank</span><span class="o">=</span><span class="mi">1</span> <span class="o">--</span><span class="n">master_addr</span><span class="o">=</span><span class="n">c000</span><span class="o">-</span><span class="mi">001</span> <span class="o">--</span><span class="n">master_port</span><span class="o">=</span><span class="mi">1234</span> <span class="n">message_passing</span><span class="o">.</span><span class="n">py</span>
+
+</pre></div>
+</div>
+<p>The above example is suitable for the TACC Frontera machine, where each rtx node is equipped with 4 GPUs (nproc_per_node is 4).</p>
+<p>Say if we would run our application on Lonestar6, another different equipped with GPU from TACC, with 3 GPUs on each node, we would changed the “nproc_per_node” argument to 3:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">torchrun</span> <span class="o">--</span><span class="n">nproc_per_node</span> <span class="mi">3</span> <span class="o">--</span><span class="n">nnodes</span> <span class="mi">2</span> <span class="o">--</span><span class="n">node_rank</span><span class="o">=</span><span class="mi">0</span> <span class="o">--</span><span class="n">master_addr</span><span class="o">=</span><span class="n">c000</span><span class="o">-</span><span class="mi">001</span> <span class="o">--</span><span class="n">master_port</span><span class="o">=</span><span class="mi">1234</span> <span class="n">message_passing</span><span class="o">.</span><span class="n">py</span>
+</pre></div>
+</div>
+</section>
+<section id="set-environment-variable-with-mpirun-and-slurm">
+<h3>Set Environment Variable with mpirun and SLURM<a class="headerlink" href="#set-environment-variable-with-mpirun-and-slurm" title="Link to this heading">#</a></h3>
+<p>The <code class="docutils literal notranslate"><span class="pre">torchrun</span></code> launcher is all we need to launch a script on multiple nodes. Why do we want to use it in combination with <code class="docutils literal notranslate"><span class="pre">mpirun</span></code> and SLURM? We have to ssh on to each machine and manually modify the run the launch command on each node, and that is error-prone. With the help of <code class="docutils literal notranslate"><span class="pre">mpirun</span></code> and SLURM, we can launch the same job with only one command.</p>
+<section id="message-passing-interface-mpi">
+<h4>Message Passing Interface (MPI)<a class="headerlink" href="#message-passing-interface-mpi" title="Link to this heading">#</a></h4>
+<p>The Message Passing Interface (MPI) is a standardized and portable message-passing standard designed to function on parallel computing architectures.[2] Here we use MPI as a fronetend for launching the job, communicating node information.</p>
+</section>
+<section id="mpirun-command">
+<h4>mpirun command<a class="headerlink" href="#mpirun-command" title="Link to this heading">#</a></h4>
+<p>Open MPI is a MPI library project. The <code class="docutils literal notranslate"><span class="pre">mpirun</span></code> command is used here to execute parallel jobs in Open MPI.</p>
+<p>We use an mpirun command line of the following form:</p>
+<p><code class="docutils literal notranslate"><span class="pre">%</span> <span class="pre">mpirun</span> <span class="pre">[</span> <span class="pre">-np</span> <span class="pre">number-of-processes</span> <span class="pre">]</span> <span class="pre">[-ppn</span> <span class="pre">processes-per-node]</span> <span class="pre">&lt;program&gt;</span></code></p>
+<p>This command will run number-of-processes copies of &lt;program&gt;.</p>
+<p>In the command line above:</p>
+<p>-np sets the number of MPI processes to launch.</p>
+<p>-ppn sets the number of processes to launch on each node.</p>
+<p>As a concrete example, to run message_passing.sh on 2 nodes, we would use this command:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># launch 2 MPI processes, with 1 process launched on each one of the 2 nodes</span>
+%<span class="w"> </span>mpirun<span class="w"> </span>-np<span class="w"> </span><span class="m">2</span><span class="w"> </span>-ppn<span class="w"> </span><span class="m">1</span><span class="w"> </span>message_passing.sh<span class="w"> </span>
+</pre></div>
+</div>
+<img alt="../_images/command_node.jpg" src="../_images/command_node.jpg" />
+<p><em>We run our application on 2 nodes through Jupyter Notebook application on TAP. Each compute node is equipped with 4 GPUs</em></p>
+<p>After we start the MPI application with the mpirun command, the command sets a number of build-in environment variables for us. One of the environment variables set is <code class="docutils literal notranslate"><span class="pre">PMI_RANK</span></code>. It is the rank of the current process among all of the processes that are created by the mpirun command that created the current process. We will set node-rank argument for torchrun, which is the rank of the node for multi-node distributed training, as <code class="docutils literal notranslate"><span class="pre">PMI_RANK</span></code>.</p>
+</section>
+<section id="slurm">
+<h4>SLURM<a class="headerlink" href="#slurm" title="Link to this heading">#</a></h4>
+<p>SLURM, or Simple Linux Utility for Resource Management, is a High performance computing (HPC) Job Scheduler that helps manage and allocates compute resources to make sure access is distributed fairly between users.</p>
+<p>We use slurm command <code class="docutils literal notranslate"><span class="pre">scontrol</span> <span class="pre">show</span> <span class="pre">hostnames</span></code> to print hostnames for job. With a list of host names, we can obtain number of nodes for the job.</p>
+<p>Finally, we have our script that can be launched with <code class="docutils literal notranslate"><span class="pre">mpirun</span></code> command from the master node. The “PRELOAD” part of the script launches a container with Python environment set up for this tutorial. Containers allow you to package an application along with all of its dependencies, so they are very handy when we run code on HPC platforms like TACC. This tutorial will not go into details about containers, but TACC has tutorial available if you are interested in <a class="reference external" href="https://containers-at-tacc.readthedocs.io/en/latest/containers/00.overview.html">containers &#64; TACC</a>.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="ch">#!/bin/bash</span>
+<span class="nv">LOCAL_RANK</span><span class="o">=</span><span class="nv">$PMI_RANK</span>
+
+<span class="nv">NODEFILE</span><span class="o">=</span>/tmp/hostfile
+scontrol<span class="w"> </span>show<span class="w"> </span>hostnames<span class="w">  </span>&gt;<span class="w"> </span><span class="nv">$NODEFILE</span>
+<span class="c1"># set master address for torchrun as the first line of scontrol&#39;s output</span>
+<span class="nv">MAIN_RANK</span><span class="o">=</span><span class="k">$(</span>head<span class="w"> </span>-n<span class="w"> </span><span class="m">1</span><span class="w"> </span><span class="nv">$NODEFILE</span><span class="k">)</span>
+<span class="nv">NNODES</span><span class="o">=</span><span class="k">$(</span>&lt;<span class="w"> </span><span class="nv">$NODEFILE</span><span class="w"> </span>wc<span class="w"> </span>-l<span class="k">)</span>
+
+
+<span class="nv">PRELOAD</span><span class="o">=</span><span class="s2">&quot;/opt/apps/tacc-apptainer/1.1.8/bin/apptainer exec --nv --bind /run/user:/run/user /scratch1/07980/sli4/containers/cnn_course.sif &quot;</span>
+<span class="nv">CMD</span><span class="o">=</span><span class="s2">&quot;torchrun --nproc_per_node 4 --nnodes </span><span class="nv">$NNODES</span><span class="s2"> --node_rank=</span><span class="nv">$LOCAL_RANK</span><span class="s2"> --master_addr=</span><span class="nv">$MAIN_RANK</span><span class="s2"> --master_port=1234 message_passing.py&quot;</span>
+
+<span class="nv">FULL_CMD</span><span class="o">=</span><span class="s2">&quot;</span><span class="nv">$PRELOAD</span><span class="s2"> </span><span class="nv">$CMD</span><span class="s2">&quot;</span>
+<span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Training command: </span><span class="nv">$FULL_CMD</span><span class="s2">&quot;</span>
+
+<span class="nb">eval</span><span class="w"> </span><span class="nv">$FULL_CMD</span>
+</pre></div>
+</div>
+<p>Our <code class="docutils literal notranslate"><span class="pre">mpirun</span></code> command</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>%<span class="w"> </span>mpirun<span class="w"> </span>-np<span class="w"> </span><span class="m">2</span><span class="w"> </span>-ppn<span class="w"> </span><span class="m">1</span><span class="w"> </span>message_passing.sh<span class="w"> </span>
+</pre></div>
+</div>
+<p>launches 2 MPI processes, with 1 process launched on each one of the 2 nodes. Let’s say process 0 runs on node A, and process 1 runs on node B. Each process runs the message_passing.sh script.</p>
+<p>In the message_passing.sh script, on accessing <code class="docutils literal notranslate"><span class="pre">PMI_RANK</span></code>, node A gets value 0, and node B gets value 1.</p>
+<p>with</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>%<span class="w"> </span>scontrol<span class="w"> </span>show<span class="w"> </span>hostnames<span class="w"> </span>
+</pre></div>
+</div>
+<p>command, we get a list of host names. A concrete example of the output from this command is</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>c000-001
+c000-002
+</pre></div>
+</div>
+<p>This suggests we have a total of 2 nodes in this job, their host names are <code class="docutils literal notranslate"><span class="pre">c000-001</span></code> and <code class="docutils literal notranslate"><span class="pre">c000-002</span></code>. We set master address for torchrun command as <code class="docutils literal notranslate"><span class="pre">c000-001</span></code>.</p>
+<p>Let’s assume node A with rank 0 uses host name <code class="docutils literal notranslate"><span class="pre">c000-001</span></code>. Node B with rank 1 uses host name <code class="docutils literal notranslate"><span class="pre">c000-002</span></code>. The full command launched on node A is:</p>
+<p><code class="docutils literal notranslate"><span class="pre">/opt/apps/tacc-apptainer/1.1.8/bin/apptainer</span> <span class="pre">exec</span> <span class="pre">--nv</span> <span class="pre">--bind</span> <span class="pre">/run/user:/run/user</span> <span class="pre">/scratch1/07980/sli4/containers/cnn_course.sif</span> <span class="pre">torchrun</span> <span class="pre">--nproc_per_node</span> <span class="pre">4</span> <span class="pre">--nnodes</span> <span class="pre">2</span> <span class="pre">--node_rank=0</span> <span class="pre">--master_addr=c000-001</span> <span class="pre">--master_port=1234</span> <span class="pre">message_passing.py</span></code></p>
+<p>And the full command launched on node B is：</p>
+<p><code class="docutils literal notranslate"><span class="pre">/opt/apps/tacc-apptainer/1.1.8/bin/apptainer</span> <span class="pre">exec</span> <span class="pre">--nv</span> <span class="pre">--bind</span> <span class="pre">/run/user:/run/user</span> <span class="pre">/scratch1/07980/sli4/containers/cnn_course.sif</span> <span class="pre">torchrun</span> <span class="pre">--nproc_per_node</span> <span class="pre">4</span> <span class="pre">--nnodes</span> <span class="pre">2</span> <span class="pre">--node_rank=1</span> <span class="pre">--master_addr=c000-001</span> <span class="pre">--master_port=1234</span> <span class="pre">message_passing.py</span></code></p>
+<p>Launching the code with <code class="docutils literal notranslate"><span class="pre">mpirun</span> <span class="pre">-np</span> <span class="pre">2</span> <span class="pre">-ppn</span> <span class="pre">1</span> <span class="pre">message_passing.sh</span></code> command, we get an output like this：</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>worker_0<span class="w"> </span>sent<span class="w"> </span>data<span class="w"> </span>to<span class="w"> </span>Rank<span class="w"> </span><span class="m">1</span>
+
+worker_1<span class="w"> </span>has<span class="w"> </span>received<span class="w"> </span>data<span class="w"> </span>from<span class="w"> </span>rank<span class="w"> </span><span class="m">0</span>
+
+worker_0<span class="w"> </span>sent<span class="w"> </span>data<span class="w"> </span>to<span class="w"> </span>Rank<span class="w"> </span><span class="m">2</span>
+
+worker_2<span class="w"> </span>has<span class="w"> </span>received<span class="w"> </span>data<span class="w"> </span>from<span class="w"> </span>rank<span class="w"> </span><span class="m">0</span>
+
+worker_0<span class="w"> </span>sent<span class="w"> </span>data<span class="w"> </span>to<span class="w"> </span>Rank<span class="w"> </span><span class="m">3</span>
+
+worker_3<span class="w"> </span>has<span class="w"> </span>received<span class="w"> </span>data<span class="w"> </span>from<span class="w"> </span>rank<span class="w"> </span><span class="m">0</span>
+
+worker_0<span class="w"> </span>sent<span class="w"> </span>data<span class="w"> </span>to<span class="w"> </span>Rank<span class="w"> </span><span class="m">4</span>
+
+worker_4<span class="w"> </span>has<span class="w"> </span>received<span class="w"> </span>data<span class="w"> </span>from<span class="w"> </span>rank<span class="w"> </span><span class="m">0</span>
+
+worker_0<span class="w"> </span>sent<span class="w"> </span>data<span class="w"> </span>to<span class="w"> </span>Rank<span class="w"> </span><span class="m">5</span>
+
+worker_5<span class="w"> </span>has<span class="w"> </span>received<span class="w"> </span>data<span class="w"> </span>from<span class="w"> </span>rank<span class="w"> </span><span class="m">0</span>
+
+worker_0<span class="w"> </span>sent<span class="w"> </span>data<span class="w"> </span>to<span class="w"> </span>Rank<span class="w"> </span><span class="m">6</span>
+
+worker_6<span class="w"> </span>has<span class="w"> </span>received<span class="w"> </span>data<span class="w"> </span>from<span class="w"> </span>rank<span class="w"> </span><span class="m">0</span>
+
+worker_0<span class="w"> </span>sent<span class="w"> </span>data<span class="w"> </span>to<span class="w"> </span>Rank<span class="w"> </span><span class="m">7</span>
+
+worker_7<span class="w"> </span>has<span class="w"> </span>received<span class="w"> </span>data<span class="w"> </span>from<span class="w"> </span>rank<span class="w"> </span><span class="m">0</span>
+</pre></div>
+</div>
+<p>The above message exchanging example with PyTorch DDP showed us how to write distributed PyTorch application across multiple nodes. With the knowledge regarding torchrun and environment variables, we are almost ready for our goal for this tutorial: train a machine learning model across multiple nodes. Before we start to work on the code for training our model, I would like to mention that the point-to-point communication used in the example is different from the collective communication used in PyTorch DDP.</p>
+</section>
+<section id="point-to-point-communication-vs-collective-communication">
+<h4>Point-to-Point Communication vs. Collective Communication<a class="headerlink" href="#point-to-point-communication-vs-collective-communication" title="Link to this heading">#</a></h4>
+<p>The above example uses point-to-point communication through  <code class="docutils literal notranslate"><span class="pre">send</span></code> and <code class="docutils literal notranslate"><span class="pre">recv</span></code> functions. Point-to-point communication is useful when we want more find-grained control over the communication of our process.</p>
+<p><img alt="../_images/send_recv.png" src="../_images/send_recv.png" /> [4]</p>
+<p>Remember PyTorch’s DistributedDataParallel uses collective communications instead of point-to-point ones: all gradients are synchronized by averaging gradients from each GPU and sent back to the individual GPUs via an Allreduce operation. The Allreudce collective communication applies on every tensor and stores result in all processes in the process group.</p>
+<p><img alt="../_images/all_reduce.png" src="../_images/all_reduce.png" /> [5]</p>
+</section>
+</section>
+</section>
+<section id="design-safe-resnet-case-study-train-on-multiple-nodes">
+<h2>Design Safe ResNet Case Study: Train on Multiple Nodes<a class="headerlink" href="#design-safe-resnet-case-study-train-on-multiple-nodes" title="Link to this heading">#</a></h2>
+<section id="resnet-training">
+<h3>ResNet Training<a class="headerlink" href="#resnet-training" title="Link to this heading">#</a></h3>
+<p>With the understanding of multi node distributed training with PyTorch, we can adapt our Design Safe ResNet training script into a version that runs in parallel on multiple nodes.</p>
+<p>In single node multi gpu trainig, local rank is enough to allocate the rank for a GPU. In the multi node setting, we need to use <code class="docutils literal notranslate"><span class="pre">$GLOBAL_RANK</span></code> variable for this. And that is the ONLY difference between single and multi node training.</p>
+<p>In summary, the only change we need to make in the training python script, is when we save/load the model, since we only want to save one copy of the model, we choose to save it on the GPU device with <code class="docutils literal notranslate"><span class="pre">GLOBAL_RANK</span></code>, instead of the devices with <code class="docutils literal notranslate"><span class="pre">LOCAL_RANK</span></code> 0.</p>
+<section id="single-node">
+<h4>Single node:<a class="headerlink" href="#single-node" title="Link to this heading">#</a></h4>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">train</span><span class="p">(</span><span class="o">..</span><span class="p">):</span>
+    <span class="n">local_rank</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s1">&#39;LOCAL_RANK&#39;</span><span class="p">])</span>
+    <span class="k">for</span> <span class="n">epoch</span> <span class="ow">in</span> <span class="n">epochs</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">batch</span> <span class="ow">in</span> <span class="n">batches</span><span class="p">:</span>
+            <span class="n">step</span><span class="p">(</span><span class="o">...</span><span class="p">)</span><span class="o">.</span> <span class="c1"># forward pass, backward pass, update weights</span>
+        <span class="k">if</span> <span class="n">local_rank</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">save</span><span class="p">({</span>
+                    <span class="s1">&#39;epoch&#39;</span><span class="p">:</span><span class="n">epoch</span><span class="p">,</span>
+                    <span class="s1">&#39;machine&#39;</span><span class="p">:</span><span class="n">local_rank</span><span class="p">,</span>
+                    <span class="s1">&#39;model_state_dict&#39;</span><span class="p">:</span><span class="n">model</span><span class="o">.</span><span class="n">module</span><span class="o">.</span><span class="n">state_dict</span><span class="p">(),</span>
+                    <span class="s1">&#39;accuracy&#39;</span><span class="p">:</span><span class="n">val_acc</span><span class="p">,</span>
+                    <span class="s1">&#39;loss&#39;</span><span class="p">:</span><span class="n">val_loss</span>
+            <span class="p">},</span> <span class="n">checkpoint_file</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="multi-node">
+<h4>Multi node:<a class="headerlink" href="#multi-node" title="Link to this heading">#</a></h4>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">train</span><span class="p">(</span><span class="o">..</span><span class="p">):</span>
+    <span class="n">rank</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s1">&#39;RANK&#39;</span><span class="p">])</span>
+    <span class="k">for</span> <span class="n">epoch</span> <span class="ow">in</span> <span class="n">epochs</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">batch</span> <span class="ow">in</span> <span class="n">batches</span><span class="p">:</span>
+            <span class="n">step</span><span class="p">(</span><span class="o">...</span><span class="p">)</span><span class="o">.</span> <span class="c1"># forward pass, backward pass, update weights</span>
+        <span class="k">if</span> <span class="n">rank</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">save</span><span class="p">({</span>
+                    <span class="s1">&#39;epoch&#39;</span><span class="p">:</span><span class="n">epoch</span><span class="p">,</span>
+                    <span class="s1">&#39;machine&#39;</span><span class="p">:</span><span class="n">rank</span><span class="p">,</span>
+                    <span class="s1">&#39;model_state_dict&#39;</span><span class="p">:</span><span class="n">model</span><span class="o">.</span><span class="n">module</span><span class="o">.</span><span class="n">state_dict</span><span class="p">(),</span>
+                    <span class="s1">&#39;accuracy&#39;</span><span class="p">:</span><span class="n">val_acc</span><span class="p">,</span>
+                    <span class="s1">&#39;loss&#39;</span><span class="p">:</span><span class="n">val_loss</span>
+            <span class="p">},</span> <span class="n">checkpoint_file</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>We will use launch the python script with the “mpirun + torchrun” launcher we used for the message passing example:</p>
+<p>We use <code class="docutils literal notranslate"><span class="pre">mpirun</span></code> to launch a bash script from one node:</p>
+<p><code class="docutils literal notranslate"><span class="pre">mpirun</span> <span class="pre">-np</span> <span class="pre">2</span> <span class="pre">-ppn</span> <span class="pre">1</span> <span class="pre">run_distributed.sh</span> </code></p>
+<p>Where the run_distributed.sh script generates the <code class="docutils literal notranslate"><span class="pre">torchrun</span></code> command on each node for us:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="ch">#!/bin/bash</span>
+<span class="nv">LOCAL_RANK</span><span class="o">=</span><span class="nv">$PMI_RANK</span>
+
+<span class="nv">NODEFILE</span><span class="o">=</span>/tmp/hostfile
+scontrol<span class="w"> </span>show<span class="w"> </span>hostnames<span class="w">  </span>&gt;<span class="w"> </span><span class="nv">$NODEFILE</span>
+<span class="nv">MAIN_RANK</span><span class="o">=</span><span class="k">$(</span>head<span class="w"> </span>-n<span class="w"> </span><span class="m">1</span><span class="w"> </span><span class="nv">$NODEFILE</span><span class="k">)</span>
+<span class="nv">NNODES</span><span class="o">=</span><span class="k">$(</span>&lt;<span class="w"> </span><span class="nv">$NODEFILE</span><span class="w"> </span>wc<span class="w"> </span>-l<span class="k">)</span>
+
+
+<span class="nv">PRELOAD</span><span class="o">=</span><span class="s2">&quot;/opt/apps/tacc-apptainer/1.1.8/bin/apptainer exec --nv --bind /run/user:/run/user /scratch1/07980/sli4/containers/cnn_course.sif &quot;</span>
+
+<span class="c1"># only difference with the message passing example is that we now run the torch_train_distributed.py python script instead of the message_passsing.py script</span>
+<span class="nv">CMD</span><span class="o">=</span><span class="s2">&quot;torchrun --nproc_per_node 4 --nnodes </span><span class="nv">$NNODES</span><span class="s2"> --node_rank=</span><span class="nv">$LOCAL_RANK</span><span class="s2"> --master_addr=</span><span class="nv">$MAIN_RANK</span><span class="s2"> --master_port=1234 torch_train_distributed.py&quot;</span>
+
+<span class="nv">FULL_CMD</span><span class="o">=</span><span class="s2">&quot;</span><span class="nv">$PRELOAD</span><span class="s2"> </span><span class="nv">$CMD</span><span class="s2">&quot;</span>
+<span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Training command: </span><span class="nv">$FULL_CMD</span><span class="s2">&quot;</span>
+
+<span class="nb">eval</span><span class="w"> </span><span class="nv">$FULL_CMD</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="data-preparation">
+<h3>Data Preparation<a class="headerlink" href="#data-preparation" title="Link to this heading">#</a></h3>
+<p>One last note for multi node training is about data preparation.</p>
+<p>In the Design Safe example, we move data to each node’s local SSD before training, to obtain superior I/O speed and low latency. In the single node example, this is done by a copy command to <code class="docutils literal notranslate"><span class="pre">/tmp</span></code>:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>cp<span class="w"> </span>-r<span class="w"> </span>/scratch1/07980/sli4/training/cnn_course/data/data.tar.gz<span class="w"> </span>/tmp/
+</pre></div>
+</div>
+<p>In the multi node training case, we need to copy our dataset onto each one of the nodes’ local SSD, meaning we need to launch this copy command on each one of the nodes. We do this by ssh on to each node in the job and launch the copy command.</p>
+<p>Our copy_date.sh script serves this purpose:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="k">for</span><span class="w"> </span>NODE<span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="nv">$NODELIST</span><span class="p">;</span><span class="w"> </span><span class="k">do</span>
+<span class="w">    </span>ssh<span class="w"> </span><span class="nv">$NODE</span><span class="w"> </span><span class="s2">&quot;</span><span class="nv">$COPY_COMMAND</span><span class="s2">&quot;</span><span class="w"> </span><span class="p">&amp;</span>
+<span class="k">done</span>
+</pre></div>
+</div>
+<p>Now that we have walked through all the bullet points regarding multi node training, we can adapt our Design Safe code to run on multiple nodes.</p>
+<p>We need to first copy data to every node.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">!</span><span class="w"> </span>copy_data.sh<span class="w"> </span>/scratch1/07980/sli4/training/cnn_course/data/data.tar.gz<span class="w"> </span>/tmp
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Command: cp -r /scratch1/07980/sli4/training/cnn_course/data/data.tar.gz /tmp ; tar zxf /tmp/data.tar.gz -C /tmp; ls /tmp/Dataset_2; rm /tmp/data.tar.gz; 
+Launching rank 0 on local node c196-022
+Launching rank 1 on remote node c196-031
+Train  Validation
+Train
+Validation
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="launch-training-script-in-containerized-environment">
+<h3>Launch training script in containerized environment<a class="headerlink" href="#launch-training-script-in-containerized-environment" title="Link to this heading">#</a></h3>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">!</span><span class="w"> </span>mpirun<span class="w"> </span>-np<span class="w"> </span><span class="m">2</span><span class="w"> </span>-ppn<span class="w"> </span><span class="m">1</span><span class="w"> </span>run_distributed.sh<span class="w"> </span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Training command: /opt/apps/tacc-apptainer/1.1.8/bin/apptainer exec --nv --bind /run/user:/run/user /scratch1/07980/sli4/containers/cnn_course.sif  torchrun --nproc_per_node 4 --nnodes 2 --node_rank=0 --master_addr=c196-022 --master_port=1234 torch_train_distributed.py 
+Training command: /opt/apps/tacc-apptainer/1.1.8/bin/apptainer exec --nv --bind /run/user:/run/user /scratch1/07980/sli4/containers/cnn_course.sif  torchrun --nproc_per_node 4 --nnodes 2 --node_rank=1 --master_addr=c196-022 --master_port=1234 torch_train_distributed.py 
+13:4: not a valid test operator: (
+13:4: not a valid test operator: 535.113.01
+13:4: not a valid test operator: (
+13:4: not a valid test operator: 535.113.01
+/home1/07980/sli4/.bashrc: line 1: module: command not found
+/home1/07980/sli4/.bashrc: line 2: module: command not found
+/home1/07980/sli4/.bashrc: line 3: module: command not found
+Train set size: 1322, Validation set size: 363
+
+(Epoch 1/5) Time: 24s
+(Epoch 1/5) Average train loss: 0.062289180854956314, Average train accuracy: 0.6553030610084534
+(Epoch 1/5) Val loss: 0.06072605773806572, Val accuracy: 0.5654761791229248
+(Epoch 1/5) Current best val acc: 0.8273810148239136
+
+
+(Epoch 2/5) Time: 24s
+(Epoch 2/5) Average train loss: 0.05039523688681198, Average train accuracy: 0.7765151858329773
+(Epoch 2/5) Val loss: 0.06147060915827751, Val accuracy: 0.6875
+(Epoch 2/5) Current best val acc: 0.8273810148239136
+
+
+(Epoch 3/5) Time: 24s
+(Epoch 3/5) Average train loss: 0.04666633960424047, Average train accuracy: 0.7821969985961914
+(Epoch 3/5) Val loss: 0.04850030690431595, Val accuracy: 0.7470238208770752
+(Epoch 3/5) Current best val acc: 0.8273810148239136
+
+
+(Epoch 4/5) Time: 25s
+(Epoch 4/5) Average train loss: 0.03595114583996209, Average train accuracy: 0.875
+(Epoch 4/5) Val loss: 0.042449064552783966, Val accuracy: 0.7470238208770752
+(Epoch 4/5) Current best val acc: 0.8273810148239136
+
+
+(Epoch 5/5) Time: 23s
+(Epoch 5/5) Average train loss: 0.030091496523131023, Average train accuracy: 0.9147727489471436
+(Epoch 5/5) Val loss: 0.04339698702096939, Val accuracy: 0.7619048357009888
+(Epoch 5/5) Current best val acc: 0.8273810148239136
+
+
+Best model (val loss: 0.040118508040905, val accuracy: 0.8273810148239136) has been saved to /home1/07980/sli4/cnn-course-scale/part3/output_model/best_model.pt
+
+Cleaning up the distributed environment...
+Distributed environment has been properly closed
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="compare-performance">
+<h3>Compare Performance<a class="headerlink" href="#compare-performance" title="Link to this heading">#</a></h3>
+<p>After launching the training command, you can compare the time it takes to train our model for 1 epoch with training on single node. How does our training scale?</p>
+</section>
+</section>
+<section id="summary">
+<h2>Summary<a class="headerlink" href="#summary" title="Link to this heading">#</a></h2>
+<p>In this notebook we introduced how to do multi node distributed training with PyTorch. We used a message exchanging example to show how to write distributed PyTorch application across multiple nodes. In the example, we used torchrun launcher. We set environment variables with mpirun and SLURM. With knowledge of torchrun, mpi and SLURM, we further learned about doing distributed machine learning model training across multiple nodes with the Design Safe ResNet case study. We talked about major code modifications for ResNet Training, learned about data preparation on multiple nodes, and finally launched our training script in containerized environment.</p>
+<p>Reference:</p>
+<p>[1] Choi, Jong Youl &amp; Zhang, Pei &amp; Mehta, Kshitij &amp; Blanchard, Andrew &amp; Lupo Pasini, Massimiliano. (2022). Scalable training of graph convolutional neural networks for fast and accurate predictions of HOMO-LUMO gap in molecules. Journal of Cheminformatics. 14. 10.1186/s13321-022-00652-1.</p>
+<p>[2] “Message Passing Interface :: High Performance Computing”. hpc.nmsu.edu. Retrieved 2022-08-06.</p>
+<p>[3] https://pytorch.org/tutorials/intermediate/ddp_series_multinode.html</p>
+<p>[4] https://pytorch.org/tutorials/intermediate/dist_tuto.html#point-to-point-communication</p>
+<p>[5] https://pytorch.org/tutorials/intermediate/dist_tuto.html#collective-communication</p>
+</section>
+</section>
+
+    <script type="text/x-thebe-config">
+    {
+        requestKernel: true,
+        binderOptions: {
+            repo: "binder-examples/jupyter-stacks-datascience",
+            ref: "master",
+        },
+        codeMirrorConfig: {
+            theme: "abcdef",
+            mode: "python"
+        },
+        kernelOptions: {
+            name: "python3",
+            path: "./scaling_part3"
+        },
+        predefinedOutput: true
+    }
+    </script>
+    <script>kernelName = 'python3'</script>
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="../scaling_part2/pytorch_torchrun_designsafe.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Single Node MultiGPU Training with Torchrun</p>
+      </div>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#multi-node-motivation">Multi node motivation</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#review-parallel-computing-on-hpc">Review Parallel Computing on HPC</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#review-pytorch-ddp">Review PyTorch DDP</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#outline-of-this-notebook">Outline of this notebook</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#multi-node-application-with-pytorch-distributed-message-exchanging-example">Multi node application with PyTorch Distributed: message exchanging example</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#communication-backend-for-torch-distributed">Communication backend for torch.distributed</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#launching-multi-node-distributed-training-how-to-set-the-environment-variables">Launching Multi node distributed Training: how to set the environment variables</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#torchrun">Torchrun</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#set-environment-variable-with-mpirun-and-slurm">Set Environment Variable with mpirun and SLURM</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#message-passing-interface-mpi">Message Passing Interface (MPI)</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#mpirun-command">mpirun command</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#slurm">SLURM</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#point-to-point-communication-vs-collective-communication">Point-to-Point Communication vs. Collective Communication</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#design-safe-resnet-case-study-train-on-multiple-nodes">Design Safe ResNet Case Study: Train on Multiple Nodes</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#resnet-training">ResNet Training</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#single-node">Single node:</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#multi-node">Multi node:</a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#data-preparation">Data Preparation</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#launch-training-script-in-containerized-environment">Launch training script in containerized environment</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#compare-performance">Compare Performance</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#summary">Summary</a></li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By Krishna Kumar and TACC team
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright 2023.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b"></script>
+<script src="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>

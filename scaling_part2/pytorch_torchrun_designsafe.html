@@ -1,0 +1,1125 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Single Node MultiGPU Training with Torchrun &#8212; Building CNN Classifiers at Scale</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../_static/styles/bootstrap.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+
+  
+  <link href="../_static/vendor/fontawesome/6.5.2/css/all.min.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/sphinx-book-theme.css?v=a3416100" />
+    <link rel="stylesheet" type="text/css" href="../_static/togglebutton.css?v=13237357" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-thebe.css?v=4fa983c6" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=87e54e7c" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
+  <script src="../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+    <script src="../_static/documentation_options.js?v=9eb32ce0"></script>
+    <script src="../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../_static/copybutton.js?v=f281be69"></script>
+    <script src="../_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
+    <script>let toggleHintShow = 'Click to show';</script>
+    <script>let toggleHintHide = 'Click to hide';</script>
+    <script>let toggleOpenOnPrint = 'true';</script>
+    <script src="../_static/togglebutton.js?v=4a39c7ea"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script src="../_static/design-tabs.js?v=f930bc37"></script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
+    <script async="async" src="../_static/sphinx-thebe.js?v=c100c467"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'scaling_part2/pytorch_torchrun_designsafe';</script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Multi node Distributed training with PyTorch" href="../scaling_part3/multinode.html" />
+    <link rel="prev" title="Introduction to DDP with Pytorch" href="../scaling_part1/ddp_intro.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-primary-sidebar-checkbox"/>
+  <label class="overlay overlay-primary" for="pst-primary-sidebar-checkbox"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-secondary-sidebar-checkbox"/>
+  <label class="overlay overlay-secondary" for="pst-secondary-sidebar-checkbox"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search this book..."
+         aria-label="Search this book..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../README.html">
+  
+  
+  
+  
+  
+  
+    <p class="title logo__title">Building CNN Classifiers at Scale</p>
+  
+</a></div>
+        <div class="sidebar-primary-item">
+
+ <script>
+ document.write(`
+   <button class="btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        
+        <ul class="nav bd-sidenav bd-sidenav__home-link">
+            <li class="toctree-l1">
+                <a class="reference internal" href="../README.html">
+                    Building Scalable CNN models
+                </a>
+            </li>
+        </ul>
+        <ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../lecture_note.html">Image Classification and Convolutional Neural Network</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intro-building-cnn-pytorch-solution.html">Building a CNN Classifier with PyTorch: Part 1</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../part2-building-cnn-pytorch-solution.html">Building a CNN Classifier with PyTorch: Part 2</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../scaling_part1/ddp_intro.html">Introduction to DDP with Pytorch</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">Single Node MultiGPU Training with Torchrun</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../scaling_part3/multinode.html">Multi node Distributed training with PyTorch</a></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><button class="sidebar-toggle primary-toggle btn btn-sm" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</button></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+
+
+
+<div class="dropdown dropdown-source-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Source repositories">
+    <i class="fab fa-github"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="https://github.com/chishiki-ai/cnn-course" target="_blank"
+   class="btn btn-sm btn-source-repository-button dropdown-item"
+   title="Source repository"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+<span class="btn__text-container">Repository</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li><a href="https://github.com/chishiki-ai/cnn-course/issues/new?title=Issue%20on%20page%20%2Fscaling_part2/pytorch_torchrun_designsafe.html&body=Your%20issue%20content%20here." target="_blank"
+   class="btn btn-sm btn-source-issues-button dropdown-item"
+   title="Open an issue"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-lightbulb"></i>
+  </span>
+<span class="btn__text-container">Open issue</span>
+</a>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+
+
+<div class="dropdown dropdown-download-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Download this page">
+    <i class="fas fa-download"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="../_sources/scaling_part2/pytorch_torchrun_designsafe.ipynb" target="_blank"
+   class="btn btn-sm btn-download-source-button dropdown-item"
+   title="Download source file"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="btn__text-container">.ipynb</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li>
+<button onclick="window.print()"
+  class="btn btn-sm btn-download-pdf-button dropdown-item"
+  title="Print to PDF"
+  data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="btn__text-container">.pdf</span>
+</button>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
+  </button>
+`);
+</script>
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm pst-navbar-icon search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+  </button>
+`);
+</script>
+<button class="sidebar-toggle secondary-toggle btn btn-sm" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</button>
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>Single Node MultiGPU Training with Torchrun</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#fault-tolerance">Fault Tolerance</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#using-torchrun">Using Torchrun</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#code-modifications-with-mnist-example">Code Modifications with MNIST Example</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#modify-code-for-environment-variables-set-by-torchrun">1. Modify code for environment variables set by torchrun</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#add-code-for-writing-checkpoints-and-resuming-training-after-failure">2. Add code for writing checkpoints and resuming training after failure</a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#launching-jobs-with-torchrun">Launching jobs with Torchrun</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#exercise-optional">Exercise (optional)</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#designsafe-classifier">DesignSafe Classifier</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#reused-code-from-part-1-and-2">Reused code from Part 1 and 2</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#setup-process-group-1-and-6">Setup Process Group (1 and 6)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#create-data-distributedsampler-2">Create Data DistributedSampler (2)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#write-checkpoints-periodically-during-training-and-only-from-one-device-4-7c">Write Checkpoints periodically during training and only from one device (4, 7C)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#create-clean-up-function-5">Create Clean Up Function (5)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#wrap-model-with-ddp-and-put-everything-together-in-main-function-3-6b-7a-7b">Wrap Model with DDP and put everything together in main function (3, 6B, 7A, 7B)</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#summary">Summary</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#references">References</a></li>
+</ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="single-node-multigpu-training-with-torchrun">
+<h1>Single Node MultiGPU Training with Torchrun<a class="headerlink" href="#single-node-multigpu-training-with-torchrun" title="Link to this heading">#</a></h1>
+<p>In the previous notebook we introduced parallel computing at HPC centers and a specific algorithm for distributed training with Pytorch, DDP.  However, there are can be many challenges that arise when utilizing multiple computational resources.  One of the biggest challenges is what happens when one of the computational resources fails during training?  In this notebook we will discuss these issues and how we set up our parallel implementation to be able to continue to run despite intermittent computational resources.  We will also combine the information in this tutorial and the previous tutorial and apply it to the DesignSafe Classifier we used previously.</p>
+<center>
+<img src="https://impanix.com/wp-content/uploads/2023/05/What-is-Fault-Tolerance-Types-and-How-To-Implement-768x461.png" width=400 /><br>
+<b>Figure 1.</b> Fault Tolerance 
+</center>
+<p>Specifically, in this tutorial, we will cover the following material:</p>
+<ul class="simple">
+<li><p>Introduce Fault Tolerance</p></li>
+<li><p>Introduce Pytorch’s Torchrun</p></li>
+<li><p>Go over code modifications need to use torchrun to launch distributed code that is fault tolerant</p></li>
+<li><p>Implement a script for training the design safe classifier using torchrun</p></li>
+</ul>
+<section id="fault-tolerance">
+<h2>Fault Tolerance<a class="headerlink" href="#fault-tolerance" title="Link to this heading">#</a></h2>
+<p>Leveraging multiple GPUs to train neural networks comes with many challenges.  One of the biggest is what happens when GPUs fails due to many potential issues (overheating, old system wears out, virus, etc.).  <strong>Fault tolerance</strong> is the ability of a system to maintain operation despite one of its components failing. One way to combat component failure is via checkpointing.  In checkpointing we periodically save the state of our application (in the case of deep learning the current weights of our model), so that if a process failure occurs we can resume our application from the previous checkpoint (See figure 2).</p>
+<img alt="../_images/checkpointing.png" src="../_images/checkpointing.png" />
+<p><b>Figure 2.</b> Visual of checkpointing.  CP refers to a point in time when a checkpoint is saved.</p>
+<p>Next, we will talk about <code class="docutils literal notranslate"><span class="pre">torchrun</span></code>, pytorch’s tools for launching distributed training that will handle fault tolerance via check pointing for you.</p>
+</section>
+<section id="using-torchrun">
+<h2>Using Torchrun<a class="headerlink" href="#using-torchrun" title="Link to this heading">#</a></h2>
+<p>Pytorch has a tool which automatically handles fault tolerance with checkpointing called <code class="docutils literal notranslate"><span class="pre">torchrun</span></code>.  Specifically, <code class="docutils literal notranslate"><span class="pre">torhcrun</span></code> has he following functionalities:</p>
+<ul class="simple">
+<li><p>worker failures are handled gracefully by restarting your workers at the previously saved checkpoint</p></li>
+<li><p>environment variables, like RANK and WORLD_SIZE, are automatically set for you.  All environment variables set by pytorch can be found <a class="reference external" href="https://pytorch.org/docs/stable/elastic/run.html#environment-variables">here</a></p></li>
+<li><p>number of nodes being leveraged can vary during training (elasticity)</p></li>
+</ul>
+<p>In this notebook we will introduce how to utilize environment variable automatically set in torchrun as well as how to use checkpointing.  We will not cover elasticity as it is outside the scope of this course.  To explain the functionality of the torchrun we will:</p>
+<ol class="arabic simple">
+<li><p>Cover the code modifications needed using the MNIST example from the previous notebook</p></li>
+<li><p>Explain how to launch your script.</p></li>
+</ol>
+<p>Let’s get started.</p>
+<section id="code-modifications-with-mnist-example">
+<h3>Code Modifications with MNIST Example<a class="headerlink" href="#code-modifications-with-mnist-example" title="Link to this heading">#</a></h3>
+<p>To utilize torchrun’s functionality we will need to make some changes to the distributed scaling script we created in the previous notebook. These code changes include:</p>
+<ol class="arabic simple">
+<li><p>Modify code for environment variables set by torchrun:</p>
+<ol class="arabic simple">
+<li><p>Remove code that sets environment variables as this done for you automatically with torchrun.</p></li>
+<li><p>Instead, use these environment variables set by pytorch and instead of explicitly defining them.</p></li>
+</ol>
+</li>
+<li><p>Add code for writing checkpoints and resuming training after failure</p>
+<ol class="arabic simple">
+<li><p>Create location to store checkpoints</p></li>
+<li><p>Read checkpoints if they exist and resume training at epoch checkpoint was written</p></li>
+<li><p>Write checkpoints periodically during training</p></li>
+</ol>
+</li>
+<li><p>Remove using the mp.spawn to parallelize code and replace this with a function call, as this is done automatically by torchrun</p></li>
+</ol>
+<p>Let’s highlight the listed code changes above by revisiting the MNIST example we used in previous notebook.  In order to implement these changes only two functions need to me modified, <code class="docutils literal notranslate"><span class="pre">init_distributed</span></code> and <code class="docutils literal notranslate"><span class="pre">main</span></code> functions.</p>
+<section id="modify-code-for-environment-variables-set-by-torchrun">
+<h4>1. Modify code for environment variables set by torchrun<a class="headerlink" href="#modify-code-for-environment-variables-set-by-torchrun" title="Link to this heading">#</a></h4>
+<p>In order to use the environment variables set by torchrun we will need to make modifications to both the <code class="docutils literal notranslate"><span class="pre">init_distributed</span></code> and <code class="docutils literal notranslate"><span class="pre">main</span></code> functions as highlighted in code example below.  In summary, we removed the local_rank and world_size arguments from the <code class="docutils literal notranslate"><span class="pre">init_distributed</span></code> function and instead set these variables within the function from the environment variables set by torchrun. Additionally, we modify our main function to utilize the <code class="docutils literal notranslate"><span class="pre">local_rank</span></code> environment variable to set the device where our model should be stored as well as call the modified <code class="docutils literal notranslate"><span class="pre">init_distributed</span></code> function.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1">##################################################################################</span>
+<span class="c1"># A. Remove code that sets environment variables as this done for you automatically with torchrun.</span>
+<span class="k">def</span> <span class="nf">init_distributed</span><span class="p">():</span>    <span class="c1"># (local_rank, world_size):</span>
+
+    <span class="c1"># B. Instead, use these environment variables set by pytorch and instead of explicitly defining them.</span>
+    <span class="n">world_size</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s1">&#39;WORLD_SIZE&#39;</span><span class="p">])</span>
+    <span class="n">local_rank</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s1">&#39;LOCAL_RANK&#39;</span><span class="p">])</span>
+    <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">set_device</span><span class="p">(</span><span class="n">local_rank</span><span class="p">)</span>                       
+    <span class="n">dist</span><span class="o">.</span><span class="n">init_process_group</span><span class="p">(</span><span class="s2">&quot;nccl&quot;</span><span class="p">,</span>                   
+                            <span class="n">rank</span><span class="o">=</span><span class="n">local_rank</span><span class="p">,</span>          
+                            <span class="n">world_size</span><span class="o">=</span><span class="n">world_size</span><span class="p">)</span>    
+
+<span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
+    <span class="c1">#####################################################################</span>
+    <span class="c1"># 1.B We also create the variable local_rank in our main function as well as call the new init_distributed()</span>
+    <span class="c1"># this will be used to assign the gpu where our model should reside as highlighted below </span>
+    <span class="n">local_rank</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s1">&#39;LOCAL_RANK&#39;</span><span class="p">])</span>
+
+    <span class="n">init_distributed</span><span class="p">()</span>
+    <span class="c1">################################################</span>
+    <span class="c1"># .....</span>
+    <span class="c1"># instantiate network and set to local_rank device</span>
+    <span class="n">net</span> <span class="o">=</span> <span class="n">Net</span><span class="p">()</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">local_rank</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="add-code-for-writing-checkpoints-and-resuming-training-after-failure">
+<h4>2. Add code for writing checkpoints and resuming training after failure<a class="headerlink" href="#add-code-for-writing-checkpoints-and-resuming-training-after-failure" title="Link to this heading">#</a></h4>
+<p>We need to make several modifications to the main function to incorporate writing checkpoints and resuming at a checkpoint after process failure.  These modifications are highlighted below with rows of <code class="docutils literal notranslate"><span class="pre">#</span></code> and includes line by line comments to explain why each modification was written.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
+    <span class="n">local_rank</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s1">&#39;LOCAL_RANK&#39;</span><span class="p">])</span>
+    <span class="n">init_distributed</span><span class="p">()</span>
+
+    <span class="n">train_dataloader</span> <span class="o">=</span> <span class="n">prepare_data</span><span class="p">()</span>
+
+    <span class="c1">################################################                                                 </span>
+    <span class="c1"># 2.A. Create location to store checkpoints</span>
+
+    <span class="c1"># Create directory for storing checkpointed model</span>
+    <span class="n">model_folder_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">()</span><span class="o">+</span><span class="s2">&quot;/output_model/&quot;</span>          <span class="c1"># create variable for path to folder for checkpoints</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">model_folder_path</span><span class="p">,</span><span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>              <span class="c1"># create directory for models if they do not exist</span>
+    <span class="c1"># create file name for checkpoint </span>
+    <span class="n">checkpoint_file</span> <span class="o">=</span> <span class="n">model_folder_path</span><span class="o">+</span><span class="s2">&quot;best_model.pt&quot;</span>       <span class="c1"># create filename for model checkpoint</span>
+    <span class="c1">################################################</span>
+
+    <span class="n">net</span> <span class="o">=</span> <span class="n">Net</span><span class="p">()</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">local_rank</span><span class="p">)</span>
+
+    <span class="c1">#################################################</span>
+    <span class="c1"># 2B. Read checkpoints if they exist </span>
+    <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">checkpoint_file</span><span class="p">):</span>
+        <span class="n">checkpoint</span> <span class="o">=</span> <span class="n">load_checkpoint</span><span class="p">(</span><span class="n">checkpoint_file</span><span class="p">,</span> <span class="n">DEVICE</span><span class="p">)</span>  <span class="c1"># load previous checkpoint</span>
+        <span class="n">model</span><span class="o">.</span><span class="n">load_state_dict</span><span class="p">(</span><span class="n">checkpoint</span><span class="p">[</span><span class="s1">&#39;model_state_dict&#39;</span><span class="p">])</span>  <span class="c1"># set model weights to be that of the last checkpoin</span>
+        <span class="n">epoch_start</span> <span class="o">=</span> <span class="n">checkpoint</span><span class="p">[</span><span class="s1">&#39;epoch&#39;</span><span class="p">]</span>                      <span class="c1"># set epoch where training should resume</span>
+   
+    <span class="c1"># otherwise we are starting training from the beginning at epoch 0</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">epoch_start</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="c1">################################################</span>
+
+    <span class="n">model</span> <span class="o">=</span> <span class="n">DDP</span><span class="p">(</span><span class="n">net</span><span class="p">,</span>
+            <span class="n">device_ids</span><span class="o">=</span><span class="p">[</span><span class="n">local_rank</span><span class="p">],</span>                  <span class="c1"># list of gpu that model lives on </span>
+            <span class="n">output_device</span><span class="o">=</span><span class="n">local_rank</span><span class="p">,</span>                 <span class="c1"># where to output model</span>
+        <span class="p">)</span>
+
+
+    <span class="n">loss_fn</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">CrossEntropyLoss</span><span class="p">()</span>
+    <span class="n">optimizer</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">Adam</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">lr</span><span class="o">=</span><span class="mf">0.001</span><span class="p">)</span>
+
+    <span class="n">save_every</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="n">epochs</span> <span class="o">=</span> <span class="mi">10</span>
+    <span class="c1">###########################################################</span>
+    <span class="c1"># 2C. Resume training at epoch last checkpoint was written</span>
+    <span class="k">for</span> <span class="n">epoch</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">epoch_start</span><span class="p">,</span> <span class="n">epochs</span><span class="p">):</span>                  <span class="c1"># note we start loop at epoch_start defined in code above</span>
+    <span class="c1">###########################################################</span>
+        <span class="n">train_loop</span><span class="p">(</span><span class="n">rank</span><span class="p">,</span> <span class="n">train_dataloader</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">loss_fn</span><span class="p">,</span> <span class="n">optimizer</span><span class="p">)</span>
+        <span class="c1">###########################################################</span>
+        <span class="c1"># 2D. Write checkpoints periodically during training</span>
+        <span class="k">if</span> <span class="n">rank</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">epoch</span><span class="o">%</span><span class="k">save_every</span>==0:
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Epoch </span><span class="si">{</span><span class="n">epoch</span><span class="o">+</span><span class="mi">1</span><span class="si">}</span><span class="se">\n</span><span class="s2">-------------------------------&quot;</span><span class="p">)</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">save</span><span class="p">({</span>                                     <span class="c1"># save model&#39;s state_dict and current epoch periodically</span>
+                <span class="s1">&#39;epoch&#39;</span><span class="p">:</span><span class="n">epoch</span><span class="p">,</span>
+                <span class="s1">&#39;model_state_dict&#39;</span><span class="p">:</span><span class="n">model</span><span class="o">.</span><span class="n">module</span><span class="o">.</span><span class="n">state_dict</span><span class="p">(),</span>
+            <span class="p">},</span> <span class="n">checkpoint_file</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Finished saving model</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="c1">###########################################################</span>
+
+    <span class="n">dist</span><span class="o">.</span><span class="n">destroy_process_group</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>You can find the entire modified script with the changes highlighted above in the file <code class="docutils literal notranslate"><span class="pre">mnist_torchrun.py</span></code>.  Next, we will learn how to run this script with <code class="docutils literal notranslate"><span class="pre">torchrun</span></code>.</p>
+</section>
+</section>
+<section id="launching-jobs-with-torchrun">
+<h3>Launching jobs with Torchrun<a class="headerlink" href="#launching-jobs-with-torchrun" title="Link to this heading">#</a></h3>
+<p>In order to launch our new <code class="docutils literal notranslate"><span class="pre">mnist_torchrun.py</span></code> script you can use the <code class="docutils literal notranslate"><span class="pre">torchrun</span></code> command.  There are several arguments that could pass with torchrun.  These arguments vary based on the type of job you are launching.  For example, the arguments needed for a single node job versus a multinode.  For now, we will cover the arguments needs for a single node job.</p>
+<p>Let’s start by introducing three arguments that can be helpful when launching a single node job:</p>
+<ul class="simple">
+<li><p><strong>–standalone</strong> : This indicates to pytorch that you are running a single machine multiworker job.  It automatically sets up a rendezvous backend that is represented by a C10d TCP store on port 29400</p></li>
+<li><p><strong>–nnodes</strong> : Total number of nodes being used</p></li>
+<li><p><strong>–nproc-per-node</strong> : number of processes per node; this is typically set to the number of GPUs on your machine(s)</p></li>
+</ul>
+<p>To launch a generic training script (YOUR_TRAINING_SCRIPT.py) on a single node with 4 GPUs you can do the following:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">torchrun</span>
+    <span class="o">--</span><span class="n">standalone</span>
+    <span class="o">--</span><span class="n">nnodes</span><span class="o">=</span><span class="mi">1</span>
+    <span class="o">--</span><span class="n">nproc</span><span class="o">-</span><span class="n">per</span><span class="o">-</span><span class="n">node</span><span class="o">=</span><span class="mi">4</span>
+    <span class="n">YOUR_TRAINING_SCRIPT</span><span class="o">.</span><span class="n">py</span> <span class="p">(</span><span class="o">--</span><span class="n">arg1</span> <span class="o">...</span> <span class="n">train</span> <span class="n">script</span> <span class="n">args</span><span class="o">...</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Next, let’s run our MNIST training script with torchrun:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">!</span>torchrun<span class="w"> </span>--nproc-per-node<span class="o">=</span><span class="m">4</span><span class="w"> </span>mnist_torchrun.py
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+</section>
+<section id="exercise-optional">
+<h2>Exercise (optional)<a class="headerlink" href="#exercise-optional" title="Link to this heading">#</a></h2>
+<p>Modify simple linear regression script you created in previous tutorial to be able to use torchrun.</p>
+</section>
+<section id="designsafe-classifier">
+<h2>DesignSafe Classifier<a class="headerlink" href="#designsafe-classifier" title="Link to this heading">#</a></h2>
+<center>
+<img src="https://converge.colorado.edu/wp-content/uploads/2021/06/designsafe_logo_tagline.png" />
+</center>
+In this tutorial and the previous, we have introduced a lot of content on how to write training scripts that run on multiple GPUs with the MNIST dataset.  For the rest of this notebook we will return to an more interesting application, the DesignSafe Classifier we created in previous tutorials.  As a reminder, this is a dataset from Hurricane Harvey, a category 4 hurricane that hit Texas in August of 2017 and resulted in catastrophic flooding to the Houston metropolitan area. The data set is specifically focused on image classification of homes according to the amount of damage the home received. All images of homes are labeled as C0, C2, or C4 respectively for low, medium or high damage.
+<p>For the remainder of this notebook we will do a code walk through for the Designsafe Classifier that is setup to run on multiple GPUs with torchrun.  Additionally this example will incorporate code for model evaluation.  The script we create in this notebook will be used in the next tutorial where we cover multinode training. Let’s dive in!</p>
+<section id="reused-code-from-part-1-and-2">
+<h3>Reused code from Part 1 and 2<a class="headerlink" href="#reused-code-from-part-1-and-2" title="Link to this heading">#</a></h3>
+<p>Pytorch aims to make code non-intrusive in that you can take existing code which trains a neural net on a single processer an easily scale out when hitting resource limitations with minimal code changes.  With this spirit in mind, let’s first point out all the code that can be reused.  Below are a set of functions and import statements that we will not need to modify that were created previously.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">gc</span>
+
+<span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">import</span> <span class="nn">torchvision</span>
+<span class="kn">from</span> <span class="nn">torchvision</span> <span class="kn">import</span> <span class="n">datasets</span><span class="p">,</span> <span class="n">models</span><span class="p">,</span> <span class="n">transforms</span>
+<span class="kn">import</span> <span class="nn">torch.nn</span> <span class="k">as</span> <span class="nn">nn</span>
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span>
+<span class="kn">import</span> <span class="nn">warnings</span>
+<span class="kn">import</span> <span class="nn">shutil</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Apply transformations to our data.</span>
+<span class="c1"># The datasets transformations are the same as the ones from part 2 of this tutorial.</span>
+<span class="k">def</span> <span class="nf">load_datasets</span><span class="p">(</span><span class="n">train_path</span><span class="p">,</span> <span class="n">val_path</span><span class="p">,</span> <span class="n">test_path</span><span class="p">):</span>
+    <span class="n">val_img_transform</span> <span class="o">=</span> <span class="n">transforms</span><span class="o">.</span><span class="n">Compose</span><span class="p">([</span><span class="n">transforms</span><span class="o">.</span><span class="n">Resize</span><span class="p">((</span><span class="mi">244</span><span class="p">,</span><span class="mi">244</span><span class="p">)),</span>
+                                             <span class="n">transforms</span><span class="o">.</span><span class="n">ToTensor</span><span class="p">()])</span>
+    <span class="n">train_img_transform</span> <span class="o">=</span> <span class="n">transforms</span><span class="o">.</span><span class="n">Compose</span><span class="p">([</span><span class="n">transforms</span><span class="o">.</span><span class="n">AutoAugment</span><span class="p">(),</span>
+                                               <span class="n">transforms</span><span class="o">.</span><span class="n">Resize</span><span class="p">((</span><span class="mi">244</span><span class="p">,</span><span class="mi">244</span><span class="p">)),</span>
+                                               <span class="n">transforms</span><span class="o">.</span><span class="n">ToTensor</span><span class="p">()])</span>
+    <span class="n">train_dataset</span> <span class="o">=</span> <span class="n">datasets</span><span class="o">.</span><span class="n">ImageFolder</span><span class="p">(</span><span class="n">train_path</span><span class="p">,</span> <span class="n">transform</span><span class="o">=</span><span class="n">train_img_transform</span><span class="p">)</span>
+    <span class="n">val_dataset</span> <span class="o">=</span> <span class="n">datasets</span><span class="o">.</span><span class="n">ImageFolder</span><span class="p">(</span><span class="n">val_path</span><span class="p">,</span> <span class="n">transform</span><span class="o">=</span><span class="n">val_img_transform</span><span class="p">)</span>
+    <span class="n">test_dataset</span> <span class="o">=</span> <span class="n">datasets</span><span class="o">.</span><span class="n">ImageFolder</span><span class="p">(</span><span class="n">test_path</span><span class="p">,</span> <span class="n">transform</span><span class="o">=</span><span class="n">val_img_transform</span><span class="p">)</span> <span class="k">if</span> <span class="n">test_path</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span>
+
+    <span class="k">return</span> <span class="n">train_dataset</span><span class="p">,</span> <span class="n">val_dataset</span><span class="p">,</span> <span class="n">test_dataset</span>
+
+<span class="c1"># Building the Neural Network</span>
+<span class="k">def</span> <span class="nf">getResNet</span><span class="p">():</span>
+    <span class="n">resnet</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">resnet34</span><span class="p">(</span><span class="n">weights</span><span class="o">=</span><span class="s1">&#39;IMAGENET1K_V1&#39;</span><span class="p">)</span>
+
+    <span class="c1"># Fix the conv layers parameters</span>
+    <span class="k">for</span> <span class="n">conv_param</span> <span class="ow">in</span> <span class="n">resnet</span><span class="o">.</span><span class="n">parameters</span><span class="p">():</span>
+        <span class="n">conv_param</span><span class="o">.</span><span class="n">require_grad</span> <span class="o">=</span> <span class="kc">False</span>
+
+    <span class="c1"># get the input dimension for this layer</span>
+    <span class="n">num_ftrs</span> <span class="o">=</span> <span class="n">resnet</span><span class="o">.</span><span class="n">fc</span><span class="o">.</span><span class="n">in_features</span>
+
+    <span class="c1"># build the new final mlp layers of network</span>
+    <span class="n">fc</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span>
+          <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">num_ftrs</span><span class="p">,</span> <span class="n">num_ftrs</span><span class="p">),</span>
+          <span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">(),</span>
+          <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">num_ftrs</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+        <span class="p">)</span>
+   
+    <span class="c1"># replace final fully connected layer</span>
+    <span class="n">resnet</span><span class="o">.</span><span class="n">fc</span> <span class="o">=</span> <span class="n">fc</span>
+    <span class="k">return</span> <span class="n">resnet</span>
+
+<span class="c1"># Model evaluation.</span>
+<span class="nd">@torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">()</span>
+<span class="k">def</span> <span class="nf">eval_model</span><span class="p">(</span><span class="n">data_loader</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">loss_fn</span><span class="p">,</span> <span class="n">DEVICE</span><span class="p">):</span>
+    <span class="n">model</span><span class="o">.</span><span class="n">train</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
+    <span class="n">loss</span><span class="p">,</span> <span class="n">accuracy</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">data_loader</span><span class="p">)</span>
+
+    <span class="c1">#  local_rank = int(os.environ[&#39;LOCAL_RANK&#39;])</span>
+
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">data</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">data_loader</span><span class="p">):</span>
+        <span class="n">x</span><span class="p">,</span><span class="n">y</span> <span class="o">=</span> <span class="n">data</span>
+        <span class="n">x</span><span class="p">,</span><span class="n">y</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">DEVICE</span><span class="p">),</span> <span class="n">y</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">DEVICE</span><span class="p">)</span>
+        <span class="n">pred</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">loss</span> <span class="o">+=</span> <span class="n">loss_fn</span><span class="p">(</span><span class="n">pred</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span><span class="o">/</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">pred_label</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">pred</span><span class="p">,</span> <span class="n">axis</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">accuracy</span> <span class="o">+=</span> <span class="n">torch</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">pred_label</span> <span class="o">==</span> <span class="n">y</span><span class="p">)</span><span class="o">/</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">loss</span><span class="o">/</span><span class="n">n</span><span class="p">,</span> <span class="n">accuracy</span><span class="o">/</span><span class="n">n</span>
+
+<span class="c1"># loading checkpoint</span>
+<span class="k">def</span> <span class="nf">load_checkpoint</span><span class="p">(</span><span class="n">checkpoint_path</span><span class="p">,</span> <span class="n">DEVICE</span><span class="p">):</span>
+    <span class="n">checkpoint</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">checkpoint_path</span><span class="p">,</span> <span class="n">map_location</span><span class="o">=</span><span class="n">DEVICE</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">checkpoint</span>
+
+<span class="k">def</span> <span class="nf">load_model_fm_checkpoint</span><span class="p">(</span><span class="n">checkpoint</span><span class="p">,</span> <span class="n">primitive_model</span><span class="p">):</span>
+    <span class="n">primitive_model</span><span class="o">.</span><span class="n">load_state_dict</span><span class="p">(</span><span class="n">checkpoint</span><span class="p">[</span><span class="s1">&#39;model_state_dict&#39;</span><span class="p">])</span>
+    <span class="k">return</span> <span class="n">primitive_model</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>Next, let’s highlight the modifications that need to be made to scale our DesignSafe Classifier code in the following order.  As a reminder below are the 8 modifications we highlighted in the this and the previous tutorial.</p>
+<p><strong>Serial to Parallel Modifications</strong></p>
+<ol class="arabic simple">
+<li><p>Create a process group</p></li>
+<li><p>Use Pytorch’s DistributedSampler to ensure that data passed to each GPU is different</p></li>
+<li><p>Wrap Model with Pytorch’s DistributedDataParallel</p></li>
+<li><p>Modify Training Loop to write model from one GPU</p></li>
+<li><p>Close process group</p></li>
+</ol>
+<p><strong>Torchrun Modifications</strong></p>
+<ol class="arabic simple" start="6">
+<li><p>Modify code for environment variables set by torchrun:</p>
+<ol class="arabic simple">
+<li><p>Remove code that sets environment variables as this done for you automatically with torchrun.</p></li>
+<li><p>Instead, use these environment variables set by pytorch and instead of explicitly defining them.</p></li>
+</ol>
+</li>
+<li><p>Add code for writing checkpoints and resuming training after failure</p>
+<ol class="arabic simple">
+<li><p>Create location to store checkpoints</p></li>
+<li><p>Read checkpoints if they exist and resume training at epoch checkpoint was written</p></li>
+<li><p>Write checkpoints periodically during training</p></li>
+</ol>
+</li>
+<li><p>Remove using the mp.spawn to parallelize code and replace this with a function call, as this is done automatically by torchrun</p></li>
+</ol>
+</section>
+<section id="setup-process-group-1-and-6">
+<h3>Setup Process Group (1 and 6)<a class="headerlink" href="#setup-process-group-1-and-6" title="Link to this heading">#</a></h3>
+<p>Similiar to what, we say with the MNIST example, we create a function for creating the process group.  This function includes modifications we made needed to use environment variables set by torchrun as well.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch.distributed</span> <span class="k">as</span> <span class="nn">dist</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># code from script</span>
+<span class="k">def</span> <span class="nf">init_distributed</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    set up process group with torchrun&#39;s environment variables</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">dist_url</span> <span class="o">=</span> <span class="s2">&quot;env://&quot;</span>
+    <span class="n">world_size</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s1">&#39;WORLD_SIZE&#39;</span><span class="p">])</span>
+    <span class="n">local_rank</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s1">&#39;LOCAL_RANK&#39;</span><span class="p">])</span>
+    <span class="n">dist</span><span class="o">.</span><span class="n">init_process_group</span><span class="p">(</span><span class="n">backend</span><span class="o">=</span><span class="s2">&quot;nccl&quot;</span><span class="p">,</span> <span class="c1">#&quot;nccl&quot; for using GPUs, &quot;gloo&quot; for using CPUs</span>
+                          <span class="n">init_method</span><span class="o">=</span><span class="n">dist_url</span><span class="p">,</span>
+                          <span class="n">world_size</span><span class="o">=</span><span class="n">world_size</span><span class="p">,</span>
+                          <span class="n">rank</span><span class="o">=</span><span class="n">local_rank</span><span class="p">)</span>
+    <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">set_device</span><span class="p">(</span><span class="n">local_rank</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="create-data-distributedsampler-2">
+<h3>Create Data DistributedSampler (2)<a class="headerlink" href="#create-data-distributedsampler-2" title="Link to this heading">#</a></h3>
+<p>Next we modify the dataloader such that we are using the DistributedSampler</p>
+<ul class="simple">
+<li><p>load data across gpus</p></li>
+<li><p>The sampler returns a iterator over indices, which are fed into dataloader</p></li>
+</ul>
+<p>Note that we have set up a the DistributedSampler and Dataloader for our training and validation data as well.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">torch.utils.data.distributed</span> <span class="kn">import</span> <span class="n">DistributedSampler</span> 
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">construct_dataloaders</span><span class="p">(</span><span class="n">train_set</span><span class="p">,</span> <span class="n">val_set</span><span class="p">,</span> <span class="n">test_set</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+
+    <span class="c1">##########################################################################################</span>
+    <span class="c1"># 2. Use Pytorch&#39;s DistributedSampler to ensure that data passed to each GPU is different</span>
+
+    <span class="c1"># create distributedsampler for train, validation and test sets</span>
+    <span class="n">train_sampler</span> <span class="o">=</span> <span class="n">DistributedSampler</span><span class="p">(</span><span class="n">dataset</span><span class="o">=</span><span class="n">train_set</span><span class="p">,</span><span class="n">shuffle</span><span class="o">=</span><span class="n">shuffle</span><span class="p">)</span>
+    <span class="n">val_sampler</span> <span class="o">=</span> <span class="n">DistributedSampler</span><span class="p">(</span><span class="n">dataset</span><span class="o">=</span><span class="n">val_set</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">test_sampler</span> <span class="o">=</span> <span class="n">DistributedSampler</span><span class="p">(</span><span class="n">dataset</span><span class="o">=</span><span class="n">test_set</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="k">if</span> <span class="n">test_set</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span>
+
+    <span class="c1"># pass distributedsampler for train, validation and test sets into DataLoader</span>
+    <span class="n">train_dataloader</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">DataLoader</span><span class="p">(</span><span class="n">train_set</span><span class="p">,</span><span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span><span class="n">sampler</span><span class="o">=</span><span class="n">train_sampler</span><span class="p">,</span><span class="n">num_workers</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span><span class="n">pin_memory</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">val_dataloader</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">DataLoader</span><span class="p">(</span><span class="n">val_set</span><span class="p">,</span><span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span><span class="n">sampler</span><span class="o">=</span><span class="n">val_sampler</span><span class="p">,</span><span class="n">num_workers</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+    <span class="n">test_dataloader</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">DataLoader</span><span class="p">(</span><span class="n">test_aset</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">,</span> <span class="n">sampler</span><span class="o">=</span><span class="n">test_sampler</span><span class="p">,</span><span class="n">num_workers</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span> <span class="k">if</span> <span class="n">test_set</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span>
+
+    <span class="k">return</span> <span class="n">train_dataloader</span><span class="p">,</span> <span class="n">val_dataloader</span><span class="p">,</span> <span class="n">test_dataloader</span>
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="write-checkpoints-periodically-during-training-and-only-from-one-device-4-7c">
+<h3>Write Checkpoints periodically during training and only from one device (4, 7C)<a class="headerlink" href="#write-checkpoints-periodically-during-training-and-only-from-one-device-4-7c" title="Link to this heading">#</a></h3>
+<p>Major code modifications are highlighted with comments at the end of the function below.  Note, we implement checkpointing a little differently in this script. Below we save the most recent checkpoint only if it reachs a minimum validation accuracy.  That way we will always have the most accurate model at the end of training.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">train</span><span class="p">(</span><span class="n">train_loader</span><span class="p">,</span> <span class="n">val_loader</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">opt</span><span class="p">,</span> <span class="n">scheduler</span><span class="p">,</span> <span class="n">loss_fn</span><span class="p">,</span> <span class="n">epochs</span><span class="p">,</span> <span class="n">DEVICE</span><span class="p">,</span> <span class="n">checkpoint_file</span><span class="p">,</span> <span class="n">prev_best_val_acc</span><span class="p">):</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">train_loader</span><span class="p">)</span>
+
+    <span class="n">best_val_acc</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="mf">0.0</span><span class="p">)</span><span class="o">.</span><span class="n">cuda</span><span class="p">()</span> <span class="k">if</span> <span class="n">prev_best_val_acc</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">prev_best_val_acc</span>
+
+    <span class="k">for</span> <span class="n">epoch</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">epochs</span><span class="p">):</span>
+        <span class="n">model</span><span class="o">.</span><span class="n">train</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="n">train_loader</span><span class="o">.</span><span class="n">sampler</span><span class="o">.</span><span class="n">set_epoch</span><span class="p">(</span><span class="n">epoch</span><span class="p">)</span>
+
+        <span class="n">avg_loss</span><span class="p">,</span> <span class="n">val_loss</span><span class="p">,</span> <span class="n">val_acc</span><span class="p">,</span> <span class="n">avg_acc</span>  <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span>
+
+        <span class="n">start_time</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>
+
+        <span class="k">for</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="ow">in</span> <span class="n">train_loader</span><span class="p">:</span>
+            <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">DEVICE</span><span class="p">),</span> <span class="n">y</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">DEVICE</span><span class="p">)</span>
+            <span class="n">pred</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+            <span class="n">loss</span> <span class="o">=</span> <span class="n">loss_fn</span><span class="p">(</span><span class="n">pred</span><span class="p">,</span><span class="n">y</span><span class="p">)</span>
+
+            <span class="n">opt</span><span class="o">.</span><span class="n">zero_grad</span><span class="p">()</span>
+            <span class="n">loss</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>
+            <span class="n">opt</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
+
+            <span class="n">avg_loss</span> <span class="o">+=</span> <span class="n">loss</span><span class="o">.</span><span class="n">item</span><span class="p">()</span><span class="o">/</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+            <span class="n">pred_label</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">pred</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">avg_acc</span> <span class="o">+=</span> <span class="n">torch</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">pred_label</span> <span class="o">==</span> <span class="n">y</span><span class="p">)</span><span class="o">/</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+        <span class="n">val_loss</span><span class="p">,</span> <span class="n">val_acc</span> <span class="o">=</span> <span class="n">eval_model</span><span class="p">(</span><span class="n">val_loader</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">loss_fn</span><span class="p">,</span> <span class="n">DEVICE</span><span class="p">)</span>
+
+        <span class="n">end_time</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>
+
+        <span class="n">total_time</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">((</span><span class="n">end_time</span><span class="o">-</span><span class="n">start_time</span><span class="p">)</span><span class="o">.</span><span class="n">seconds</span><span class="p">)</span><span class="o">.</span><span class="n">cuda</span><span class="p">()</span>
+
+        <span class="c1"># Learning rate reducer takes action</span>
+        <span class="n">scheduler</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">val_loss</span><span class="p">)</span>
+
+        <span class="n">avg_loss</span><span class="p">,</span> <span class="n">avg_acc</span> <span class="o">=</span> <span class="n">avg_loss</span><span class="o">/</span><span class="n">n</span><span class="p">,</span> <span class="n">avg_acc</span><span class="o">/</span><span class="n">n</span>
+
+        <span class="c1">###############################################################################</span>
+        <span class="c1"># 4. Modify Training Loop to write model from one GPU     #####################</span>
+        <span class="c1"># 7C. Write checkpoints periodically throughout training. #####################</span>
+        <span class="n">local_rank</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s1">&#39;LOCAL_RANK&#39;</span><span class="p">])</span>
+        <span class="c1"># Only machine rank==0 (master machine) saves the model and prints the metrics    </span>
+        <span class="k">if</span> <span class="n">local_rank</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+
+          <span class="c1"># Save the best model that has the highest val accuracy</span>
+          <span class="k">if</span> <span class="n">val_acc</span><span class="o">.</span><span class="n">item</span><span class="p">()</span> <span class="o">&gt;</span> <span class="n">best_val_acc</span><span class="o">.</span><span class="n">item</span><span class="p">():</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Prev Best Val Acc: </span><span class="si">{</span><span class="n">best_val_acc</span><span class="si">}</span><span class="s2"> &lt; Cur Val Acc: </span><span class="si">{</span><span class="n">val_acc</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Saving the new best model...&quot;</span><span class="p">)</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">save</span><span class="p">({</span>
+                    <span class="s1">&#39;epoch&#39;</span><span class="p">:</span><span class="n">epoch</span><span class="p">,</span>
+                    <span class="s1">&#39;machine&#39;</span><span class="p">:</span><span class="n">local_rank</span><span class="p">,</span>
+                    <span class="s1">&#39;model_state_dict&#39;</span><span class="p">:</span><span class="n">model</span><span class="o">.</span><span class="n">module</span><span class="o">.</span><span class="n">state_dict</span><span class="p">(),</span>
+                    <span class="s1">&#39;accuracy&#39;</span><span class="p">:</span><span class="n">val_acc</span><span class="p">,</span>
+                    <span class="s1">&#39;loss&#39;</span><span class="p">:</span><span class="n">val_loss</span>
+            <span class="p">},</span> <span class="n">checkpoint_file</span><span class="p">)</span>
+            <span class="n">best_val_acc</span> <span class="o">=</span> <span class="n">val_acc</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Finished saving model</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+
+          <span class="c1"># Print the metrics (should be same on all machines)</span>
+          <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">(Epoch </span><span class="si">{</span><span class="n">epoch</span><span class="o">+</span><span class="mi">1</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">epochs</span><span class="si">}</span><span class="s2">) Time: </span><span class="si">{</span><span class="n">total_time</span><span class="si">}</span><span class="s2">s&quot;</span><span class="p">)</span>
+          <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;(Epoch </span><span class="si">{</span><span class="n">epoch</span><span class="o">+</span><span class="mi">1</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">epochs</span><span class="si">}</span><span class="s2">) Average train loss: </span><span class="si">{</span><span class="n">avg_loss</span><span class="si">}</span><span class="s2">, Average train accuracy: </span><span class="si">{</span><span class="n">avg_acc</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+          <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;(Epoch </span><span class="si">{</span><span class="n">epoch</span><span class="o">+</span><span class="mi">1</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">epochs</span><span class="si">}</span><span class="s2">) Val loss: </span><span class="si">{</span><span class="n">val_loss</span><span class="si">}</span><span class="s2">, Val accuracy: </span><span class="si">{</span><span class="n">val_acc</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+          <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;(Epoch </span><span class="si">{</span><span class="n">epoch</span><span class="o">+</span><span class="mi">1</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">epochs</span><span class="si">}</span><span class="s2">) Current best val acc: </span><span class="si">{</span><span class="n">best_val_acc</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="c1">###############################################################################</span>
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="create-clean-up-function-5">
+<h3>Create Clean Up Function (5)<a class="headerlink" href="#create-clean-up-function-5" title="Link to this heading">#</a></h3>
+<p>This function simply closes the process group at the end of training.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">cleanup</span><span class="p">():</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Cleaning up the distributed environment...&quot;</span><span class="p">)</span>
+    <span class="n">dist</span><span class="o">.</span><span class="n">destroy_process_group</span><span class="p">()</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Distributed environment has been properly closed&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="wrap-model-with-ddp-and-put-everything-together-in-main-function-3-6b-7a-7b">
+<h3>Wrap Model with DDP and put everything together in main function (3, 6B, 7A, 7B)<a class="headerlink" href="#wrap-model-with-ddp-and-put-everything-together-in-main-function-3-6b-7a-7b" title="Link to this heading">#</a></h3>
+<p>In the main function we wrap our model with ddp, use pytorch’s environment varaibles to specify our device, and create what’s needed to store and resume training at checkpoints.</p>
+<p>Additionally, we report on the best model we find throughout training at the end of the script.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
+    <span class="n">hp</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;lr&quot;</span><span class="p">:</span><span class="mf">1e-4</span><span class="p">,</span> <span class="s2">&quot;batch_size&quot;</span><span class="p">:</span><span class="mi">16</span><span class="p">,</span> <span class="s2">&quot;epochs&quot;</span><span class="p">:</span><span class="mi">5</span><span class="p">}</span>
+    <span class="n">train_path</span><span class="p">,</span> <span class="n">val_path</span><span class="p">,</span> <span class="n">test_path</span> <span class="o">=</span> <span class="s2">&quot;/tmp/Dataset_2/Train/&quot;</span><span class="p">,</span> <span class="s2">&quot;/tmp/Dataset_2/Validation/&quot;</span><span class="p">,</span> <span class="kc">None</span>
+
+    <span class="c1">#################################################</span>
+    <span class="c1"># 6B. Use pytorch&#39;s enviornment variables.  #####</span>
+    <span class="n">local_rank</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s1">&#39;LOCAL_RANK&#39;</span><span class="p">])</span>
+    <span class="c1">#################################################</span>
+    <span class="n">DEVICE</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s2">&quot;cuda&quot;</span><span class="p">,</span> <span class="n">local_rank</span><span class="p">)</span>
+
+    <span class="c1">###########################################################</span>
+    <span class="c1"># 7A. create location to store checkpoints if they exist. ##</span>
+    <span class="n">model_folder_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">()</span><span class="o">+</span><span class="s2">&quot;/output_model/&quot;</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">model_folder_path</span><span class="p">,</span><span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="c1">###########################################################</span>
+   
+    <span class="n">loss_fn</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">CrossEntropyLoss</span><span class="p">(</span><span class="n">label_smoothing</span><span class="o">=</span><span class="mf">0.1</span><span class="p">)</span><span class="o">.</span><span class="n">cuda</span><span class="p">()</span>
+    <span class="n">train_set</span><span class="p">,</span> <span class="n">val_set</span><span class="p">,</span> <span class="n">test_set</span> <span class="o">=</span> <span class="n">load_datasets</span><span class="p">(</span><span class="n">train_path</span><span class="p">,</span> <span class="n">val_path</span><span class="p">,</span> <span class="n">test_path</span><span class="p">)</span>
+    <span class="n">train_dataloader</span><span class="p">,</span> <span class="n">val_dataloader</span><span class="p">,</span> <span class="n">test_dataloader</span> <span class="o">=</span> <span class="n">construct_dataloaders</span><span class="p">(</span><span class="n">train_set</span><span class="p">,</span> <span class="n">val_set</span><span class="p">,</span> <span class="n">test_set</span><span class="p">,</span> <span class="n">hp</span><span class="p">[</span><span class="s2">&quot;batch_size&quot;</span><span class="p">],</span> <span class="kc">True</span><span class="p">)</span>
+
+    <span class="n">model</span> <span class="o">=</span> <span class="n">getResNet</span><span class="p">()</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">DEVICE</span><span class="p">)</span>
+    <span class="c1">##########################################################################</span>
+    <span class="c1"># 3. Wrap model with DDP #################################################</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">parallel</span><span class="o">.</span><span class="n">DistributedDataParallel</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">device_ids</span><span class="o">=</span><span class="p">[</span><span class="n">local_rank</span><span class="p">])</span>
+    <span class="c1">##########################################################################</span>
+    <span class="n">opt</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">Adam</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span><span class="n">lr</span><span class="o">=</span><span class="n">hp</span><span class="p">[</span><span class="s2">&quot;lr&quot;</span><span class="p">])</span>
+
+    <span class="c1">######################################################################################</span>
+    <span class="c1"># 7B, Read check point if it exists and pass to the train function to resume training##</span>
+    <span class="n">prev_best_val_acc</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">checkpoint_file</span> <span class="o">=</span> <span class="n">model_folder_path</span><span class="o">+</span><span class="s2">&quot;best_model.pt&quot;</span>
+    <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">checkpoint_file</span><span class="p">):</span>
+        <span class="n">checkpoint</span> <span class="o">=</span> <span class="n">load_checkpoint</span><span class="p">(</span><span class="n">checkpoint_file</span><span class="p">,</span> <span class="n">DEVICE</span><span class="p">)</span>
+        <span class="n">prev_best_val_acc</span> <span class="o">=</span> <span class="n">checkpoint</span><span class="p">[</span><span class="s1">&#39;accuracy&#39;</span><span class="p">]</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="n">load_model_fm_checkpoint</span><span class="p">(</span><span class="n">checkpoint</span><span class="p">,</span><span class="n">model</span><span class="p">)</span>
+        <span class="n">epoch_start</span> <span class="o">=</span> <span class="n">checkpoint</span><span class="p">[</span><span class="s1">&#39;epoch&#39;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">rank</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;resuming training from epoch </span><span class="si">{</span><span class="n">epoch_start</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">epoch_start</span> <span class="o">=</span> <span class="mi">0</span>
+  <span class="c1">######################################################################################</span>
+
+    <span class="c1"># same learning rate scheduler as part 2</span>
+    <span class="n">scheduler</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">lr_scheduler</span><span class="o">.</span><span class="n">ReduceLROnPlateau</span><span class="p">(</span><span class="n">opt</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;min&#39;</span><span class="p">,</span><span class="n">factor</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">patience</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">min_lr</span><span class="o">=</span><span class="mf">1e-8</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="n">train</span><span class="p">(</span><span class="n">train_dataloader</span><span class="p">,</span> <span class="n">val_dataloader</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">opt</span><span class="p">,</span> <span class="n">scheduler</span><span class="p">,</span> <span class="n">loss_fn</span><span class="p">,</span> <span class="n">hp</span><span class="p">[</span><span class="s2">&quot;epochs&quot;</span><span class="p">],</span> <span class="n">DEVICE</span><span class="p">,</span> <span class="n">checkpoint_file</span><span class="p">,</span> <span class="n">prev_best_val_acc</span><span class="p">)</span>
+
+    <span class="c1"># only the node with rank 0 does the loading, evaluation and printing to avoild duplicate </span>
+    <span class="k">if</span> <span class="n">local_rank</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="c1"># store and print info on the best model at the end of training</span>
+        <span class="n">primitive_model</span> <span class="o">=</span> <span class="n">getResNet</span><span class="p">()</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">DEVICE</span><span class="p">)</span>
+        <span class="n">checkpoint</span> <span class="o">=</span> <span class="n">load_checkpoint</span><span class="p">(</span><span class="n">checkpoint_file</span><span class="p">,</span> <span class="n">DEVICE</span><span class="p">)</span>
+        <span class="n">best_model</span> <span class="o">=</span> <span class="n">load_model_fm_checkpoint</span><span class="p">(</span><span class="n">checkpoint</span><span class="p">,</span><span class="n">primitive_model</span><span class="p">)</span>
+        <span class="n">loss</span><span class="p">,</span> <span class="n">acc</span> <span class="o">=</span> <span class="n">eval_model</span><span class="p">(</span><span class="n">val_dataloader</span><span class="p">,</span><span class="n">best_model</span><span class="p">,</span><span class="n">loss_fn</span><span class="p">,</span><span class="n">DEVICE</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Best model (val loss: </span><span class="si">{</span><span class="n">loss</span><span class="si">}</span><span class="s2">, val accuracy: </span><span class="si">{</span><span class="n">acc</span><span class="si">}</span><span class="s2">) has been saved to </span><span class="si">{</span><span class="n">checkpoint_file</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="c1">###############################</span>
+        <span class="c1"># 5. close process group ######</span>
+        <span class="n">cleanup</span><span class="p">()</span>
+        <span class="c1">###############################</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>Finally, let’s run our designsafe classifier on a single node and 4 GPUs. Well start by copying the data that we need.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">!</span><span class="w"> </span>cp<span class="w"> </span>-r<span class="w"> </span>/scratch1/07980/sli4/training/cnn_course/data/data.tar.gz<span class="w"> </span>/tmp/
+<span class="o">!</span><span class="w"> </span>tar<span class="w"> </span>zxf<span class="w"> </span>/tmp/data.tar.gz<span class="w"> </span>-C<span class="w"> </span>/tmp
+<span class="o">!</span><span class="w"> </span>ls<span class="w"> </span>/tmp/Dataset_2
+<span class="o">!</span><span class="w"> </span>rm<span class="w"> </span>/tmp/data.tar.gz
+</pre></div>
+</div>
+</div>
+</div>
+<p>Then, launch the job with torchrun.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">!</span>torchrun<span class="w"> </span>--nproc-per-node<span class="o">=</span><span class="m">4</span><span class="w"> </span>torch_train_distributed.py
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+</section>
+<section id="summary">
+<h2>Summary<a class="headerlink" href="#summary" title="Link to this heading">#</a></h2>
+<p>In this notebook we covered the basics of how Distributed Data Parallel (DDP) works, highlighted major code modifications needed to convert a nondistributed script into a distributed training script, and made these modifications for the DesignSafe Image Classifier example.  You can find the entire script created in the notebook here: <code class="docutils literal notranslate"><span class="pre">torch_train_distributed.py</span></code>. In the next section, we will discuss how we can launch this script to leverage a single and multiple nodes on HPC systems.</p>
+</section>
+<section id="references">
+<h2>References<a class="headerlink" href="#references" title="Link to this heading">#</a></h2>
+<ol class="arabic simple">
+<li><p>https://arxiv.org/abs/2006.15704</p></li>
+<li><p>https://pytorch.org/tutorials/beginner/ddp_series_theory.html</p></li>
+</ol>
+</section>
+</section>
+
+    <script type="text/x-thebe-config">
+    {
+        requestKernel: true,
+        binderOptions: {
+            repo: "binder-examples/jupyter-stacks-datascience",
+            ref: "master",
+        },
+        codeMirrorConfig: {
+            theme: "abcdef",
+            mode: "python"
+        },
+        kernelOptions: {
+            name: "python3",
+            path: "./scaling_part2"
+        },
+        predefinedOutput: true
+    }
+    </script>
+    <script>kernelName = 'python3'</script>
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="../scaling_part1/ddp_intro.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Introduction to DDP with Pytorch</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="../scaling_part3/multinode.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Multi node Distributed training with PyTorch</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#fault-tolerance">Fault Tolerance</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#using-torchrun">Using Torchrun</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#code-modifications-with-mnist-example">Code Modifications with MNIST Example</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#modify-code-for-environment-variables-set-by-torchrun">1. Modify code for environment variables set by torchrun</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#add-code-for-writing-checkpoints-and-resuming-training-after-failure">2. Add code for writing checkpoints and resuming training after failure</a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#launching-jobs-with-torchrun">Launching jobs with Torchrun</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#exercise-optional">Exercise (optional)</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#designsafe-classifier">DesignSafe Classifier</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#reused-code-from-part-1-and-2">Reused code from Part 1 and 2</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#setup-process-group-1-and-6">Setup Process Group (1 and 6)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#create-data-distributedsampler-2">Create Data DistributedSampler (2)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#write-checkpoints-periodically-during-training-and-only-from-one-device-4-7c">Write Checkpoints periodically during training and only from one device (4, 7C)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#create-clean-up-function-5">Create Clean Up Function (5)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#wrap-model-with-ddp-and-put-everything-together-in-main-function-3-6b-7a-7b">Wrap Model with DDP and put everything together in main function (3, 6B, 7A, 7B)</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#summary">Summary</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#references">References</a></li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By Krishna Kumar and TACC team
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright 2023.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b"></script>
+<script src="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>
