@@ -7,3 +7,6 @@ chapters:
 - file: lecture_note
 - file: intro-building-cnn-pytorch-solution
 - file: part2-building-cnn-pytorch-solution
+- file: scaling_part1/ddp_intro.ipynb
+- file: scaling_part2/pytorch_torchrun_designsafe
+- file: scaling_part3/multinode

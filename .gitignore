@@ -130,3 +130,6 @@ dmypy.json
 
 # jupyterbook
 _build/
+
+.DS_Store
+scaling_part1/data/
