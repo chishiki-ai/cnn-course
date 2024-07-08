@@ -39,7 +39,7 @@ def prepare_data(batch_size=32):
                                   ##############################################
                                   # 2. Use Pytorch's DistributedSampler to ensure that data passed to each GPU is different
                                   shuffle=False,
-                                  sampler=DistributedSampler(list(zip(X,y)),
+                                  sampler=DistributedSampler(list(zip(X,y))),
                                   ##############################################
                                   batch_size=batch_size)
     
@@ -66,12 +66,14 @@ def train_loop(rank, dataloader, model, loss_fn, optimizer):
                 loss, current = loss.item(), batch * len(X)
                 print(f"loss: {loss:>7f}  [{current:>5d}/{size:>5d}]")
 
-def main(device):
+def main(rank, world_size):
+    init_distributed(rank, world_size)
+
     train_dataloader = prepare_data()
 
     ##############################################
     # 3. Wrap Model with Pytorch's DistributedDataParallel
-    model = DDP(get_model().to(device), device_ids=[device], output_device=device)
+    model = DDP(get_model().to(rank), device_ids=[rank], output_device=rank)
     ##############################################
     
     # instantiate loss and optimizer 
@@ -83,10 +85,10 @@ def main(device):
     for t in range(epochs):
         ################################################
         # 4. Only write/print model information on one GPU
-        if device == 0:
+        if rank == 0:
             print(f"Epoch {t+1}\n-------------------------------")
         ################################################
-        train_loop(device, train_dataloader, model, loss_fn, optimizer)
+        train_loop(rank, train_dataloader, model, loss_fn, optimizer)
 
     #################################################
     # 5. Close Process Group
@@ -97,5 +99,5 @@ def main(device):
     return model
 
 if __name__ == "__main__":
-    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    main(device)
+    world_size= torch.cuda.device_count()
+    mp.spawn(main, args=(world_size,) , nprocs=world_size)

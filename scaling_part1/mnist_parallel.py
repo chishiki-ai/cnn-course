@@ -28,7 +28,7 @@ class Net(nn.Module):
         return prob
 
 def prepare_data(rank, world_size, batch_size=32):
-
+        
     trainset = torchvision.datasets.MNIST(
                             root="data",                                        # path to where data is stored
                             train=True,                                         # specifies if data is train or test
