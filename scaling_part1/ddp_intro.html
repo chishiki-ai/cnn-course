@@ -451,6 +451,11 @@ Traditionally, software has been written for serial computation where we solve a
 </pre></div>
 </div>
 </div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>GPUs are available = True
+</pre></div>
+</div>
+</div>
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
@@ -458,10 +463,20 @@ Traditionally, software has been written for serial computation where we solve a
 </pre></div>
 </div>
 </div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>The number of GPUs available are 4
+</pre></div>
+</div>
+</div>
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s1">&#39;You are currently using GPU with local rank = </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">current_device</span><span class="p">()))</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>You are currently using GPU with local rank = 0
 </pre></div>
 </div>
 </div>
@@ -594,7 +609,7 @@ $$G = A * D$$</p>
     <span class="c1">###############################</span>
 </pre></div>
 </div>
-<p>Note that when we wrap our model with DDP we will need to modify other code where  access that state of our model.  Previously when we wanted to access a model’s <code class="docutils literal notranslate"><span class="pre">.state_dict()</span></code> we would do this by calling the following method of our model:</p>
+<p>Note that when we wrap our model with DDP we will need to modify other code where  access the state of our model.  Previously when we wanted to access a model’s <code class="docutils literal notranslate"><span class="pre">.state_dict()</span></code> we would do this by calling the following method of our model:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">model</span><span class="o">.</span><span class="n">state_dict</span><span class="p">()</span>
 </pre></div>
 </div>
@@ -652,6 +667,7 @@ $$G = A * D$$</p>
 <span class="kn">import</span> <span class="nn">torchvision</span>
 <span class="kn">import</span> <span class="nn">torch.nn</span> <span class="k">as</span> <span class="nn">nn</span>
 <span class="kn">import</span> <span class="nn">torch.nn.functional</span> <span class="k">as</span> <span class="nn">F</span>
+<span class="o">%</span><span class="k">matplotlib</span> inline
 </pre></div>
 </div>
 </div>
@@ -701,6 +717,9 @@ $$G = A * D$$</p>
 <span class="n">imshow</span><span class="p">(</span><span class="n">torchvision</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">make_grid</span><span class="p">(</span><span class="n">images</span><span class="p">))</span>
 </pre></div>
 </div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../_images/fa0663ea86b25a2383b839db74d661f3bd60a984f19bc20aaf20a673d0e029ee.png" src="../_images/fa0663ea86b25a2383b839db74d661f3bd60a984f19bc20aaf20a673d0e029ee.png" />
 </div>
 </div>
 </section>
@@ -782,6 +801,62 @@ $$G = A * D$$</p>
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">device</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s1">&#39;cuda:0&#39;</span> <span class="k">if</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">is_available</span><span class="p">()</span> <span class="k">else</span> <span class="s1">&#39;cpu&#39;</span><span class="p">)</span>
 <span class="n">model</span> <span class="o">=</span> <span class="n">main</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Epoch 1
+-------------------------------
+loss: 2.306648  [    0/60000]
+loss: 0.014280  [ 4000/60000]
+loss: 0.011786  [ 8000/60000]
+loss: 0.163488  [12000/60000]
+loss: 0.153452  [16000/60000]
+loss: 0.453833  [20000/60000]
+loss: 0.031913  [24000/60000]
+loss: 0.003292  [28000/60000]
+loss: 0.029318  [32000/60000]
+loss: 0.063681  [36000/60000]
+loss: 0.000759  [40000/60000]
+loss: 0.073442  [44000/60000]
+loss: 0.046609  [48000/60000]
+loss: 0.005407  [52000/60000]
+loss: 0.126603  [56000/60000]
+Epoch 2
+-------------------------------
+loss: 0.070288  [    0/60000]
+loss: 0.000719  [ 4000/60000]
+loss: 0.010437  [ 8000/60000]
+loss: 0.336672  [12000/60000]
+loss: 0.035386  [16000/60000]
+loss: 0.043498  [20000/60000]
+loss: 0.001769  [24000/60000]
+loss: 0.000795  [28000/60000]
+loss: 0.008134  [32000/60000]
+loss: 0.247255  [36000/60000]
+loss: 0.001594  [40000/60000]
+loss: 0.017052  [44000/60000]
+loss: 0.026509  [48000/60000]
+loss: 0.000575  [52000/60000]
+loss: 0.002119  [56000/60000]
+Epoch 3
+-------------------------------
+loss: 0.002554  [    0/60000]
+loss: 0.000025  [ 4000/60000]
+loss: 0.000081  [ 8000/60000]
+loss: 1.121195  [12000/60000]
+loss: 0.002683  [16000/60000]
+loss: 0.145619  [20000/60000]
+loss: 0.002001  [24000/60000]
+loss: 0.001095  [28000/60000]
+loss: 0.079507  [32000/60000]
+loss: 0.010870  [36000/60000]
+loss: 0.000133  [40000/60000]
+loss: 0.004988  [44000/60000]
+loss: 0.014455  [48000/60000]
+loss: 0.000121  [52000/60000]
+loss: 0.008236  [56000/60000]
+Done!
 </pre></div>
 </div>
 </div>
@@ -904,7 +979,7 @@ $$G = A * D$$</p>
 </div>
 </div>
 </div>
-<p>To run this code in parallel we will utilize the <code class="docutils literal notranslate"><span class="pre">torch.multiprocessing</span></code> package which is a wrapper around Python’s native multiprocessing module. In particular, we will use the <code class="docutils literal notranslate"><span class="pre">spawn</span></code> method.  Spawn creates new processes from the parent process but will only inherit the resources necessary to run the <code class="docutils literal notranslate"><span class="pre">run()</span></code> method. Below we highlight the code used to execute training in a python script called <code class="docutils literal notranslate"><span class="pre">mnist_demo.py</span></code> that we will run to execute the parallel implemention of this code.</p>
+<p>To run this code in parallel we will utilize the <code class="docutils literal notranslate"><span class="pre">torch.multiprocessing</span></code> package which is a wrapper around Python’s native multiprocessing module. In particular, we will use the <code class="docutils literal notranslate"><span class="pre">spawn</span></code> method.  Spawn creates new processes from the parent process but will only inherit the resources necessary to run the <code class="docutils literal notranslate"><span class="pre">run()</span></code> method. Below we highlight the code used to execute training in a python script called <code class="docutils literal notranslate"><span class="pre">mnist_parallel.py</span></code> that we will run to execute the parallel implemention of this code.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
     <span class="n">world_size</span><span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">device_count</span><span class="p">()</span>
     <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;world_size = </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">world_size</span><span class="p">))</span>
@@ -915,6 +990,85 @@ $$G = A * D$$</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">!</span>python<span class="w"> </span>mnist_parallel.py
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>world_size = 4
+Epoch 1
+-------------------------------
+loss: 2.323778  [    0/60000]
+loss: 0.162850  [ 3200/60000]
+loss: 0.152105  [ 6400/60000]
+loss: 0.080957  [ 9600/60000]
+loss: 0.087677  [12800/60000]
+Epoch 2
+-------------------------------
+loss: 0.218993  [    0/60000]
+loss: 0.186821  [ 3200/60000]
+loss: 0.220338  [ 6400/60000]
+loss: 0.053301  [ 9600/60000]
+loss: 0.039036  [12800/60000]
+Epoch 3
+-------------------------------
+loss: 0.187737  [    0/60000]
+loss: 0.123499  [ 3200/60000]
+loss: 0.098414  [ 6400/60000]
+loss: 0.022703  [ 9600/60000]
+loss: 0.036694  [12800/60000]
+Epoch 4
+-------------------------------
+loss: 0.176670  [    0/60000]
+loss: 0.126830  [ 3200/60000]
+loss: 0.194266  [ 6400/60000]
+loss: 0.023831  [ 9600/60000]
+loss: 0.026895  [12800/60000]
+Epoch 5
+-------------------------------
+loss: 0.063774  [    0/60000]
+loss: 0.073143  [ 3200/60000]
+loss: 0.105964  [ 6400/60000]
+loss: 0.045004  [ 9600/60000]
+loss: 0.015466  [12800/60000]
+Epoch 6
+-------------------------------
+loss: 0.178780  [    0/60000]
+loss: 0.087692  [ 3200/60000]
+loss: 0.032312  [ 6400/60000]
+loss: 0.018549  [ 9600/60000]
+loss: 0.053898  [12800/60000]
+Epoch 7
+-------------------------------
+loss: 0.038919  [    0/60000]
+loss: 0.033320  [ 3200/60000]
+loss: 0.114450  [ 6400/60000]
+loss: 0.007494  [ 9600/60000]
+loss: 0.044638  [12800/60000]
+Epoch 8
+-------------------------------
+loss: 0.026713  [    0/60000]
+loss: 0.121801  [ 3200/60000]
+loss: 0.070507  [ 6400/60000]
+loss: 0.204315  [ 9600/60000]
+loss: 0.016688  [12800/60000]
+Epoch 9
+-------------------------------
+loss: 0.006375  [    0/60000]
+loss: 0.026646  [ 3200/60000]
+loss: 0.056931  [ 6400/60000]
+loss: 0.011560  [ 9600/60000]
+loss: 0.016448  [12800/60000]
+Epoch 10
+-------------------------------
+loss: 0.069754  [    0/60000]
+loss: 0.022994  [ 3200/60000]
+loss: 0.178422  [ 6400/60000]
+loss: 0.019096  [ 9600/60000]
+loss: 0.015145  [12800/60000]
+Done!
+Done!
+Done!
+Done!
 </pre></div>
 </div>
 </div>
@@ -948,16 +1102,16 @@ $$G = A * D$$</p>
         },
         codeMirrorConfig: {
             theme: "abcdef",
-            mode: "python"
+            mode: "cnn_course_container"
         },
         kernelOptions: {
-            name: "python3",
+            name: "cnn_course_container",
             path: "./scaling_part1"
         },
         predefinedOutput: true
     }
     </script>
-    <script>kernelName = 'python3'</script>
+    <script>kernelName = 'cnn_course_container'</script>
 
                 </article>
               

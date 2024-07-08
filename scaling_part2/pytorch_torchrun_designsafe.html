@@ -958,11 +958,61 @@ In this tutorial and the previous, we have introduced a lot of content on how to
 </pre></div>
 </div>
 </div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Train  Validation
+</pre></div>
+</div>
+</div>
 </div>
 <p>Then, launch the job with torchrun.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">!</span>torchrun<span class="w"> </span>--nproc-per-node<span class="o">=</span><span class="m">4</span><span class="w"> </span>torch_train_distributed.py
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Train set size: 1322, Validation set size: 363
+resuming training from epoch 1
+
+(Epoch 2/5) Time: 40s
+(Epoch 2/5) Average train loss: 0.03673231300950308, Average train accuracy: 0.8292748928070068
+(Epoch 2/5) Val loss: 0.060010798275470734, Val accuracy: 0.669507622718811
+(Epoch 2/5) Current best val acc: 0.761363685131073
+
+
+Prev Best Val Acc: 0.761363685131073 &lt; Cur Val Acc: 0.7670454978942871
+Saving the new best model...
+Finished saving model
+
+
+(Epoch 3/5) Time: 42s
+(Epoch 3/5) Average train loss: 0.031689850097417316, Average train accuracy: 0.886904776096344
+(Epoch 3/5) Val loss: 0.04760196432471275, Val accuracy: 0.7670454978942871
+(Epoch 3/5) Current best val acc: 0.7670454978942871
+
+
+(Epoch 4/5) Time: 42s
+(Epoch 4/5) Average train loss: 0.02868088988740465, Average train accuracy: 0.9166666865348816
+(Epoch 4/5) Val loss: 0.04517853260040283, Val accuracy: 0.7566288709640503
+(Epoch 4/5) Current best val acc: 0.7670454978942871
+
+
+Prev Best Val Acc: 0.7670454978942871 &lt; Cur Val Acc: 0.7982954978942871
+Saving the new best model...
+Finished saving model
+
+
+(Epoch 5/5) Time: 40s
+(Epoch 5/5) Average train loss: 0.024220123725794095, Average train accuracy: 0.9672619104385376
+(Epoch 5/5) Val loss: 0.04160759598016739, Val accuracy: 0.7982954978942871
+(Epoch 5/5) Current best val acc: 0.7982954978942871
+
+
+Best model (val loss: 0.04160759598016739, val accuracy: 0.7982954978942871) has been saved to /home1/07980/sli4/cnn-course/scaling_part2/output_model/best_model.pt
+
+Cleaning up the distributed environment...
+Distributed environment has been properly closed
 </pre></div>
 </div>
 </div>
@@ -991,16 +1041,16 @@ In this tutorial and the previous, we have introduced a lot of content on how to
         },
         codeMirrorConfig: {
             theme: "abcdef",
-            mode: "python"
+            mode: "cnn_course_container"
         },
         kernelOptions: {
-            name: "python3",
+            name: "cnn_course_container",
             path: "./scaling_part2"
         },
         predefinedOutput: true
     }
     </script>
-    <script>kernelName = 'python3'</script>
+    <script>kernelName = 'cnn_course_container'</script>
 
                 </article>
               

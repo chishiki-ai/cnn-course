@@ -504,7 +504,9 @@ document.write(`
   <span class="n">val_img_transform</span> <span class="o">=</span> <span class="n">transforms</span><span class="o">.</span><span class="n">Compose</span><span class="p">([</span><span class="n">transforms</span><span class="o">.</span><span class="n">Resize</span><span class="p">((</span><span class="mi">244</span><span class="p">,</span><span class="mi">244</span><span class="p">)),</span>
                                          <span class="n">transforms</span><span class="o">.</span><span class="n">ToTensor</span><span class="p">()])</span>
   <span class="c1">#  Main Modification: Additional transformation</span>
-  <span class="n">train_img_transform</span> <span class="o">=</span> 
+  <span class="n">train_img_transform</span> <span class="o">=</span> <span class="n">transforms</span><span class="o">.</span><span class="n">Compose</span><span class="p">([</span><span class="n">transforms</span><span class="o">.</span><span class="n">AutoAugment</span><span class="p">(),</span>
+                                          <span class="n">transforms</span><span class="o">.</span><span class="n">Resize</span><span class="p">((</span><span class="mi">244</span><span class="p">,</span><span class="mi">244</span><span class="p">)),</span>
+                                         <span class="n">transforms</span><span class="o">.</span><span class="n">ToTensor</span><span class="p">()])</span>
 
 
   <span class="n">train_dataset</span> <span class="o">=</span> <span class="n">datasets</span><span class="o">.</span><span class="n">ImageFolder</span><span class="p">(</span><span class="n">train_path</span><span class="p">,</span> <span class="n">transform</span><span class="o">=</span><span class="n">train_img_transform</span><span class="p">)</span>
@@ -569,7 +571,7 @@ document.write(`
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="_images/9630f14a2b07948b57cad39783798b51752e64c3e616789c78e72cad3c0b78d1.png" src="_images/9630f14a2b07948b57cad39783798b51752e64c3e616789c78e72cad3c0b78d1.png" />
+<img alt="_images/ed0338da35221db41cdf2224673d9c15ca36cb8b2bcddedc7957019f194e7034.png" src="_images/ed0338da35221db41cdf2224673d9c15ca36cb8b2bcddedc7957019f194e7034.png" />
 </div>
 </div>
 <p>As we can see above, our dataset contains images of houses post Hurricane Harvey.  Each of these images has been labeled as having low, medium, or high levels of damage.  These images have been modified in a variety of ways (rotating, pixels have changed, etc.)</p>
@@ -610,6 +612,12 @@ document.write(`
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">resnet</span> <span class="o">=</span> <span class="n">getResNet</span><span class="p">()</span>   
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Downloading: &quot;https://download.pytorch.org/models/resnet34-b627a593.pth&quot; to /tmp/checkpoints/resnet34-b627a593.pth
+100%|██████████| 83.3M/83.3M [00:00&lt;00:00, 104MB/s] 
 </pre></div>
 </div>
 </div>
@@ -670,7 +678,9 @@ document.write(`
 <span class="n">loss_fn</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">CrossEntropyLoss</span><span class="p">(</span><span class="n">label_smoothing</span><span class="o">=</span><span class="mf">0.1</span><span class="p">)</span>
 
 <span class="c1"># adding a learning rate scheduler so that the learning rate can change throughout the optimization procedure</span>
-<span class="n">scheduler</span> <span class="o">=</span> 
+<span class="n">scheduler</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">lr_scheduler</span><span class="o">.</span><span class="n">ReduceLROnPlateau</span><span class="p">(</span>
+                                    <span class="n">opt</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;min&#39;</span><span class="p">,</span> <span class="n">factor</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">patience</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">min_lr</span><span class="o">=</span><span class="mf">1e-8</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span>
+                                                        <span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -779,7 +789,8 @@ document.write(`
     <span class="c1">#######################################</span>
     <span class="c1"># Learning rate reducer takes action ##</span>
     <span class="c1">#######################################</span>
-    
+    <span class="c1">#opt.step()</span>
+    <span class="n">scheduler</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">val_loss</span><span class="p">)</span>
     
 
     <span class="n">avg_loss</span><span class="p">,</span> <span class="n">avg_acc</span> <span class="o">=</span> <span class="n">avg_loss</span><span class="o">/</span><span class="n">n</span><span class="p">,</span> <span class="n">avg_acc</span><span class="o">/</span><span class="n">n</span>
@@ -792,7 +803,12 @@ document.write(`
       <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Saving the new best model...&quot;</span><span class="p">)</span>
       
       <span class="c1">#save the model with torch.save</span>
-      <span class="n">torch</span><span class="o">.</span><span class="n">save</span><span class="p">({})</span>
+      <span class="n">torch</span><span class="o">.</span><span class="n">save</span><span class="p">({</span>
+          <span class="s1">&#39;epoch&#39;</span><span class="p">:</span><span class="n">epoch</span><span class="p">,</span>
+          <span class="s1">&#39;model_state_dict&#39;</span><span class="p">:</span><span class="n">model</span><span class="o">.</span><span class="n">state_dict</span><span class="p">(),</span>
+          <span class="s1">&#39;accuracy&#39;</span><span class="p">:</span> <span class="n">val_acc</span><span class="p">,</span>
+          <span class="s1">&#39;loss&#39;</span><span class="p">:</span><span class="n">val_loss</span>
+      <span class="p">},</span> <span class="n">checkpoint_file</span><span class="p">)</span>
     
       <span class="n">best_val_acc</span> <span class="o">=</span> <span class="n">val_acc</span>
       <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Finished saving model</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
@@ -818,44 +834,15 @@ document.write(`
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Prev Best Val Acc: 0.0 &lt; Cur Val Acc: 0.706768810749054
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Prev Best Val Acc: 0.0 &lt; Cur Val Acc: 0.7025691270828247
 Saving the new best model...
 Finished saving model
 
 
 (Epoch 1/5) Time: 414s
-(Epoch 1/5) Average train loss: 0.054781472485467615, Average train accuracy: 0.6099397540092468
-(Epoch 1/5) Val loss: 0.04778964817523956, Val accuracy: 0.706768810749054
-(Epoch 1/5) Current best val acc: 0.706768810749054
-
-
-Prev Best Val Acc: 0.706768810749054 &lt; Cur Val Acc: 0.7895256876945496
-Saving the new best model...
-Finished saving model
-
-
-(Epoch 2/5) Time: 410s
-(Epoch 2/5) Average train loss: 0.04340849735560905, Average train accuracy: 0.7557228207588196
-(Epoch 2/5) Val loss: 0.04375723376870155, Val accuracy: 0.7895256876945496
-(Epoch 2/5) Current best val acc: 0.7895256876945496
-
-
-(Epoch 3/5) Time: 410s
-(Epoch 3/5) Average train loss: 0.03606990118432476, Average train accuracy: 0.8379518389701843
-(Epoch 3/5) Val loss: 0.05057337507605553, Val accuracy: 0.73097825050354
-(Epoch 3/5) Current best val acc: 0.7895256876945496
-
-
-(Epoch 4/5) Time: 408s
-(Epoch 4/5) Average train loss: 0.03369753223855093, Average train accuracy: 0.8668674230575562
-(Epoch 4/5) Val loss: 0.042350128293037415, Val accuracy: 0.7623517513275146
-(Epoch 4/5) Current best val acc: 0.7895256876945496
-
-
-(Epoch 5/5) Time: 411s
-(Epoch 5/5) Average train loss: 0.029927182439939082, Average train accuracy: 0.8981927633285522
-(Epoch 5/5) Val loss: 0.05253813788294792, Val accuracy: 0.7161561250686646
-(Epoch 5/5) Current best val acc: 0.7895256876945496
+(Epoch 1/5) Average train loss: 0.05617035446037729, Average train accuracy: 0.5829819440841675
+(Epoch 1/5) Val loss: 0.050685182213783264, Val accuracy: 0.7025691270828247
+(Epoch 1/5) Current best val acc: 0.7025691270828247
 </pre></div>
 </div>
 </div>
@@ -973,7 +960,7 @@ Finished saving model
 <span class="n">sample</span> <span class="o">=</span> <span class="n">sample_image</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">DEVICE</span><span class="p">)</span>
 
 <span class="c1">#make the prediction</span>
-<span class="n">prediction</span> <span class="o">=</span> 
+<span class="n">prediction</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">model</span><span class="p">(</span><span class="n">sample</span><span class="p">))</span>
 
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;prediction result: </span><span class="si">{</span><span class="n">prediction</span><span class="si">}</span><span class="s2"> actual result: </span><span class="si">{</span><span class="n">label</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </pre></div>

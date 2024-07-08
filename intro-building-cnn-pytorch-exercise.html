@@ -512,10 +512,10 @@ document.write(`
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">load_datasets</span><span class="p">(</span><span class="n">train_path</span><span class="p">,</span> <span class="n">val_path</span><span class="p">,</span> <span class="n">test_path</span><span class="p">):</span>
     
   <span class="c1"># define the transformations</span>
-  <span class="n">img_transform</span> <span class="o">=</span> 
+  <span class="n">img_transform</span> <span class="o">=</span> <span class="n">transforms</span><span class="o">.</span><span class="n">Compose</span><span class="p">([</span><span class="n">transforms</span><span class="o">.</span><span class="n">Resize</span><span class="p">((</span><span class="mi">244</span><span class="p">,</span><span class="mi">244</span><span class="p">)),</span> <span class="n">transforms</span><span class="o">.</span><span class="n">ToTensor</span><span class="p">()])</span>
 
   <span class="c1"># load data</span>
-  <span class="n">train_dataset</span> <span class="o">=</span> 
+  <span class="n">train_dataset</span> <span class="o">=</span> <span class="n">datasets</span><span class="o">.</span><span class="n">ImageFolder</span><span class="p">(</span><span class="n">train_path</span><span class="p">,</span> <span class="n">transform</span><span class="o">=</span><span class="n">img_transform</span><span class="p">)</span>
 
   <span class="n">val_dataset</span> <span class="o">=</span> <span class="n">datasets</span><span class="o">.</span><span class="n">ImageFolder</span><span class="p">(</span><span class="n">val_path</span><span class="p">,</span> <span class="n">transform</span><span class="o">=</span><span class="n">img_transform</span><span class="p">)</span> 
   <span class="n">test_dataset</span> <span class="o">=</span> <span class="n">datasets</span><span class="o">.</span><span class="n">ImageFolder</span><span class="p">(</span><span class="n">test_path</span><span class="p">,</span> <span class="n">transform</span><span class="o">=</span><span class="n">img_transform</span><span class="p">)</span> <span class="k">if</span> <span class="n">test_path</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span>
@@ -547,7 +547,7 @@ document.write(`
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">construct_dataloaders</span><span class="p">(</span><span class="n">train_set</span><span class="p">,</span> <span class="n">val_set</span><span class="p">,</span> <span class="n">test_set</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
 
   <span class="c1"># instantate the DataLoader</span>
-  <span class="n">train_dataloader</span> <span class="o">=</span> 
+  <span class="n">train_dataloader</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">DataLoader</span><span class="p">(</span><span class="n">train_set</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">,</span> <span class="n">shuffle</span><span class="p">)</span>
 
   <span class="n">val_dataloader</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">DataLoader</span><span class="p">(</span><span class="n">val_set</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">)</span> 
   <span class="n">test_dataloader</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">DataLoader</span><span class="p">(</span><span class="n">test_set</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">)</span> <span class="k">if</span> <span class="n">test_path</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span>
@@ -599,6 +599,12 @@ document.write(`
 </pre></div>
 </div>
 </div>
+<div class="cell_output docutils container">
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Downloading: &quot;https://download.pytorch.org/models/resnet18-f37072fd.pth&quot; to /tmp/checkpoints/resnet18-f37072fd.pth
+100%|██████████| 44.7M/44.7M [00:00&lt;00:00, 105MB/s] 
+</pre></div>
+</div>
+</div>
 </div>
 </section>
 <section id="transfer-learning">
@@ -635,12 +641,18 @@ document.write(`
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># get the input dimension for this layer</span>
-
+<span class="n">num_ftrs</span> <span class="o">=</span> <span class="n">resnet</span><span class="o">.</span><span class="n">fc</span><span class="o">.</span><span class="n">in_features</span>
 
 <span class="c1"># build the new final fully connected layers of network</span>
+<span class="n">fc</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span>
+        <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">num_ftrs</span><span class="p">,</span> <span class="n">num_ftrs</span><span class="p">),</span>
+        <span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">(),</span>
+        <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">num_ftrs</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+    <span class="p">)</span>
 
 
 <span class="c1"># replace final fully connected layer</span>
+<span class="n">resnet</span><span class="o">.</span><span class="n">fc</span> <span class="o">=</span> <span class="n">fc</span>
 </pre></div>
 </div>
 </div>
@@ -707,21 +719,21 @@ document.write(`
     <span class="n">start_time</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>
     <span class="k">for</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="ow">in</span> <span class="n">train_loader</span><span class="p">:</span>
       <span class="c1"># move data to gpu</span>
-    
+        <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">DEVICE</span><span class="p">),</span> <span class="n">y</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">DEVICE</span><span class="p">)</span>
       <span class="c1"># compute model prediction</span>
-        
+        <span class="n">pref</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
       <span class="c1"># compute model loss</span>
-    
+        <span class="n">loss</span> <span class="o">=</span> <span class="n">loss_fn</span><span class="p">(</span><span class="n">pred</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
       <span class="c1"># backpropogation</span>
       <span class="c1"># reset gradient calculations</span>
-      
+        <span class="n">opt</span><span class="o">.</span><span class="n">zero_grad</span><span class="p">()</span>
       <span class="c1"># compute gradients</span>
-      
+        <span class="n">loss</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>
       <span class="c1"># update model parameters via optimization step</span>
-        
-      <span class="n">avg_loss</span> <span class="o">+=</span> <span class="n">loss</span>
-      <span class="n">pred_label</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">pred</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-      <span class="n">avg_acc</span> <span class="o">+=</span> <span class="n">torch</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">pred_label</span> <span class="o">==</span> <span class="n">y</span><span class="p">)</span><span class="o">/</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">opt</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
+        <span class="n">avg_loss</span> <span class="o">+=</span> <span class="n">loss</span>
+        <span class="n">pred_label</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">pred</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">avg_acc</span> <span class="o">+=</span> <span class="n">torch</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">pred_label</span> <span class="o">==</span> <span class="n">y</span><span class="p">)</span><span class="o">/</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
         
     <span class="n">end_time</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>
     <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Time: </span><span class="si">{</span><span class="p">(</span><span class="n">end_time</span><span class="o">-</span><span class="n">start_time</span><span class="p">)</span><span class="o">.</span><span class="n">seconds</span><span class="si">}</span><span class="s2">s&quot;</span><span class="p">)</span>
