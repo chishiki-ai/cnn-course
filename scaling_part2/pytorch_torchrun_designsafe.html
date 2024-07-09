@@ -431,7 +431,7 @@ document.write(`
 </section>
 <section id="using-torchrun">
 <h2>Using Torchrun<a class="headerlink" href="#using-torchrun" title="Link to this heading">#</a></h2>
-<p>Pytorch has a tool which automatically handles fault tolerance with checkpointing called <code class="docutils literal notranslate"><span class="pre">torchrun</span></code>.  Specifically, <code class="docutils literal notranslate"><span class="pre">torhcrun</span></code> has he following functionalities:</p>
+<p>Pytorch has a tool which automatically handles fault tolerance with checkpointing called <code class="docutils literal notranslate"><span class="pre">torchrun</span></code>.  Specifically, <code class="docutils literal notranslate"><span class="pre">torhcrun</span></code> has the following functionalities:</p>
 <ul class="simple">
 <li><p>worker failures are handled gracefully by restarting your workers at the previously saved checkpoint</p></li>
 <li><p>environment variables, like RANK and WORLD_SIZE, are automatically set for you.  All environment variables set by pytorch can be found <a class="reference external" href="https://pytorch.org/docs/stable/elastic/run.html#environment-variables">here</a></p></li>
@@ -462,7 +462,7 @@ document.write(`
 </li>
 <li><p>Remove using the mp.spawn to parallelize code and replace this with a function call, as this is done automatically by torchrun</p></li>
 </ol>
-<p>Let’s highlight the listed code changes above by revisiting the MNIST example we used in previous notebook.  In order to implement these changes only two functions need to me modified, <code class="docutils literal notranslate"><span class="pre">init_distributed</span></code> and <code class="docutils literal notranslate"><span class="pre">main</span></code> functions.</p>
+<p>Let’s highlight the listed code changes above by revisiting the MNIST example we used in previous notebook.  In order to implement these changes only two functions need to be modified, <code class="docutils literal notranslate"><span class="pre">init_distributed</span></code> and <code class="docutils literal notranslate"><span class="pre">main</span></code> functions.</p>
 <section id="modify-code-for-environment-variables-set-by-torchrun">
 <h4>1. Modify code for environment variables set by torchrun<a class="headerlink" href="#modify-code-for-environment-variables-set-by-torchrun" title="Link to this heading">#</a></h4>
 <p>In order to use the environment variables set by torchrun we will need to make modifications to both the <code class="docutils literal notranslate"><span class="pre">init_distributed</span></code> and <code class="docutils literal notranslate"><span class="pre">main</span></code> functions as highlighted in code example below.  In summary, we removed the local_rank and world_size arguments from the <code class="docutils literal notranslate"><span class="pre">init_distributed</span></code> function and instead set these variables within the function from the environment variables set by torchrun. Additionally, we modify our main function to utilize the <code class="docutils literal notranslate"><span class="pre">local_rank</span></code> environment variable to set the device where our model should be stored as well as call the modified <code class="docutils literal notranslate"><span class="pre">init_distributed</span></code> function.</p>
@@ -523,7 +523,7 @@ document.write(`
     <span class="c1"># 2B. Read checkpoints if they exist </span>
     <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">checkpoint_file</span><span class="p">):</span>
         <span class="n">checkpoint</span> <span class="o">=</span> <span class="n">load_checkpoint</span><span class="p">(</span><span class="n">checkpoint_file</span><span class="p">,</span> <span class="n">DEVICE</span><span class="p">)</span>  <span class="c1"># load previous checkpoint</span>
-        <span class="n">model</span><span class="o">.</span><span class="n">load_state_dict</span><span class="p">(</span><span class="n">checkpoint</span><span class="p">[</span><span class="s1">&#39;model_state_dict&#39;</span><span class="p">])</span>  <span class="c1"># set model weights to be that of the last checkpoin</span>
+        <span class="n">model</span><span class="o">.</span><span class="n">load_state_dict</span><span class="p">(</span><span class="n">checkpoint</span><span class="p">[</span><span class="s1">&#39;model_state_dict&#39;</span><span class="p">])</span>  <span class="c1"># set model weights to be that of the last checkpoint</span>
         <span class="n">epoch_start</span> <span class="o">=</span> <span class="n">checkpoint</span><span class="p">[</span><span class="s1">&#39;epoch&#39;</span><span class="p">]</span>                      <span class="c1"># set epoch where training should resume</span>
    
     <span class="c1"># otherwise we are starting training from the beginning at epoch 0</span>
@@ -568,7 +568,7 @@ document.write(`
 </section>
 <section id="launching-jobs-with-torchrun">
 <h3>Launching jobs with Torchrun<a class="headerlink" href="#launching-jobs-with-torchrun" title="Link to this heading">#</a></h3>
-<p>In order to launch our new <code class="docutils literal notranslate"><span class="pre">mnist_torchrun.py</span></code> script you can use the <code class="docutils literal notranslate"><span class="pre">torchrun</span></code> command.  There are several arguments that could pass with torchrun.  These arguments vary based on the type of job you are launching.  For example, the arguments needed for a single node job versus a multinode.  For now, we will cover the arguments needs for a single node job.</p>
+<p>In order to launch our new <code class="docutils literal notranslate"><span class="pre">mnist_torchrun.py</span></code> script you can use the <code class="docutils literal notranslate"><span class="pre">torchrun</span></code> command.  There are several arguments that could pass with torchrun.  These arguments vary based on the type of job you are launching.  For example, the arguments needed for a single node job versus a multinode.  For now, we will cover the arguments needed for a single node job.</p>
 <p>Let’s start by introducing three arguments that can be helpful when launching a single node job:</p>
 <ul class="simple">
 <li><p><strong>–standalone</strong> : This indicates to pytorch that you are running a single machine multiworker job.  It automatically sets up a rendezvous backend that is represented by a C10d TCP store on port 29400</p></li>
@@ -590,12 +590,227 @@ document.write(`
 </pre></div>
 </div>
 </div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>loss: 0.203195  [    0/60000]
+loss: 0.074431  [ 3200/60000]
+loss: 0.189091  [ 6400/60000]
+loss: 0.073738  [ 9600/60000]
+loss: 0.066978  [12800/60000]
+Epoch 3
+-------------------------------
+Finished saving model
+
+loss: 0.062485  [    0/60000]
+loss: 0.078024  [ 3200/60000]
+loss: 0.189246  [ 6400/60000]
+loss: 0.053398  [ 9600/60000]
+loss: 0.036767  [12800/60000]
+Epoch 4
+-------------------------------
+Finished saving model
+
+loss: 0.126662  [    0/60000]
+loss: 0.069352  [ 3200/60000]
+loss: 0.122379  [ 6400/60000]
+loss: 0.059098  [ 9600/60000]
+loss: 0.067286  [12800/60000]
+Epoch 5
+-------------------------------
+Finished saving model
+
+loss: 0.137779  [    0/60000]
+loss: 0.018163  [ 3200/60000]
+loss: 0.138813  [ 6400/60000]
+loss: 0.054595  [ 9600/60000]
+loss: 0.033671  [12800/60000]
+Epoch 6
+-------------------------------
+Finished saving model
+
+loss: 0.041862  [    0/60000]
+loss: 0.011954  [ 3200/60000]
+loss: 0.143069  [ 6400/60000]
+loss: 0.065292  [ 9600/60000]
+loss: 0.022921  [12800/60000]
+Epoch 7
+-------------------------------
+Finished saving model
+
+loss: 0.081174  [    0/60000]
+loss: 0.034889  [ 3200/60000]
+loss: 0.162659  [ 6400/60000]
+loss: 0.029243  [ 9600/60000]
+loss: 0.074870  [12800/60000]
+Epoch 8
+-------------------------------
+Finished saving model
+
+loss: 0.135172  [    0/60000]
+loss: 0.017945  [ 3200/60000]
+loss: 0.181934  [ 6400/60000]
+loss: 0.074838  [ 9600/60000]
+loss: 0.026501  [12800/60000]
+Epoch 9
+-------------------------------
+Finished saving model
+
+loss: 0.052655  [    0/60000]
+loss: 0.047647  [ 3200/60000]
+loss: 0.211128  [ 6400/60000]
+loss: 0.039325  [ 9600/60000]
+loss: 0.011085  [12800/60000]
+Done!
+Done!
+Done!
+Epoch 10
+-------------------------------
+Finished saving model
+
+Done!
+</pre></div>
+</div>
+</div>
 </div>
 </section>
 </section>
 <section id="exercise-optional">
 <h2>Exercise (optional)<a class="headerlink" href="#exercise-optional" title="Link to this heading">#</a></h2>
 <p>Modify simple linear regression script you created in previous tutorial to be able to use torchrun.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">!</span>torchrun<span class="w"> </span>--nproc-per-node<span class="o">=</span><span class="m">4</span><span class="w"> </span>../scaling_part1/simple_linear_regression_parallel_torchrun.py
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Epoch 1
+-------------------------------
+loss: 24.083977  [    0/  128]
+loss: 26.135323  [    0/  128]
+loss: 25.212147  [    0/  128]
+Epoch 2
+-------------------------------
+loss: 24.799385  [    0/  128]
+loss: 18.444149  [    0/  128]loss: 18.045048  [    0/  128]
+
+Epoch 3
+-------------------------------
+loss: 16.962395  [    0/  128]
+loss: 16.770927  [    0/  128]
+loss: 13.576710  [    0/  128]loss: 13.183523  [    0/  128]
+
+Epoch 4
+-------------------------------
+loss: 11.582039  [    0/  128]
+loss: 11.755295  [    0/  128]
+loss: 11.668168  [    0/  128]loss: 10.266031  [    0/  128]
+
+Epoch 5
+-------------------------------
+loss: 8.568253  [    0/  128]
+loss: 8.953877  [    0/  128]
+loss: 9.378763  [    0/  128]loss: 11.899617  [    0/  128]
+
+loss: 7.603078  [    0/  128]
+Epoch 6
+-------------------------------
+loss: 8.073140  [    0/  128]
+loss: 8.063532  [    0/  128]
+loss: 9.903101  [    0/  128]
+loss: 13.486264  [    0/  128]
+Epoch 7
+-------------------------------
+loss: 8.535467  [    0/  128]
+loss: 9.112846  [    0/  128]
+loss: 11.003969  [    0/  128]
+loss: 15.417793  [    0/  128]
+Epoch 8
+-------------------------------
+loss: 9.557705  [    0/  128]
+loss: 10.002034  [    0/  128]
+loss: 11.934654  [    0/  128]loss: 16.840523  [    0/  128]
+
+Epoch 9
+-------------------------------
+loss: 10.431515  [    0/  128]
+loss: 10.336411  [    0/  128]
+loss: 12.304113  [    0/  128]
+loss: 17.353153  [    0/  128]
+Epoch 10
+-------------------------------
+loss: 10.779010  [    0/  128]
+loss: 10.086973  [    0/  128]
+loss: 12.085987  [    0/  128]loss: 16.986258  [    0/  128]
+
+Epoch 11
+-------------------------------
+loss: 10.567831  [    0/  128]
+loss: 9.440779  [    0/  128]
+loss: 9.971262  [    0/  128]
+loss: 11.467884  [    0/  128]
+loss: 16.010429  [    0/  128]
+Epoch 12
+-------------------------------
+loss: 8.654609  [    0/  128]
+loss: 9.230089  [    0/  128]
+loss: 10.705453  [    0/  128]
+loss: 14.764645  [    0/  128]
+Epoch 13
+-------------------------------
+loss: 7.963270  [    0/  128]
+loss: 10.031391  [    0/  128]
+loss: 8.565935  [    0/  128]loss: 13.554027  [    0/  128]
+
+Epoch 14
+-------------------------------
+loss: 7.530114  [    0/  128]
+loss: 9.606644  [    0/  128]loss: 8.134575  [    0/  128]
+
+loss: 12.597019  [    0/  128]
+Epoch 15
+-------------------------------
+loss: 7.423536  [    0/  128]
+loss: 8.003799  [    0/  128]
+loss: 9.497602  [    0/  128]
+loss: 12.001453  [    0/  128]
+Epoch 16
+-------------------------------
+loss: 7.614058  [    0/  128]
+loss: 8.150340  [    0/  128]
+loss: 9.674055  [    0/  128]
+loss: 11.763142  [    0/  128]
+Epoch 17
+-------------------------------
+loss: 7.993494  [    0/  128]
+loss: 8.477062  [    0/  128]
+loss: 10.029032  [    0/  128]
+loss: 11.788194  [    0/  128]
+Epoch 18
+-------------------------------
+loss: 8.414743  [    0/  128]
+loss: 8.849287  [    0/  128]
+loss: 10.418572  [    0/  128]
+loss: 11.936691  [    0/  128]
+Epoch 19
+-------------------------------
+loss: 8.740856  [    0/  128]
+loss: 9.140112  [    0/  128]
+loss: 10.709900  [    0/  128]
+loss: 12.074926  [    0/  128]
+Epoch 20
+-------------------------------
+loss: 8.884842  [    0/  128]
+Done!
+loss: 9.267749  [    0/  128]
+Done!
+loss: 10.820014  [    0/  128]
+loss: 12.116979  [    0/  128]
+Done!
+Done!
+</pre></div>
+</div>
+</div>
+</div>
 </section>
 <section id="designsafe-classifier">
 <h2>DesignSafe Classifier<a class="headerlink" href="#designsafe-classifier" title="Link to this heading">#</a></h2>
@@ -896,7 +1111,7 @@ In this tutorial and the previous, we have introduced a lot of content on how to
     <span class="n">DEVICE</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s2">&quot;cuda&quot;</span><span class="p">,</span> <span class="n">local_rank</span><span class="p">)</span>
 
     <span class="c1">###########################################################</span>
-    <span class="c1"># 7A. create location to store checkpoints if they exist. ##</span>
+    <span class="c1"># 7A. create location to store checkpoints if they did not exist. ##</span>
     <span class="n">model_folder_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">()</span><span class="o">+</span><span class="s2">&quot;/output_model/&quot;</span>
     <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">model_folder_path</span><span class="p">,</span><span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
     <span class="c1">###########################################################</span>

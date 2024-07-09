@@ -426,7 +426,7 @@ document.write(`
 <img alt="../_images/login-compute-nodes-jupyter.jpg" src="../_images/login-compute-nodes-jupyter.jpg" />
 <p><em>Login vs Compute Nodes</em></p>
 <p>HPC centers, like TACC, host several supercomputers. Supercomputers, or computer clusters, are a group of interconnected computers such that they can act like a single machine. The various computers that make up the computer cluster are nodes which come in two types: login and compute. Login nodes are those that you interact with in logging on to our machines via SSH and are used for routine task like modifying and organizing files. Compute nodes are where the actual calculations are done and what we will utilize to parallelize the training of neural networks. A GPU node typically consists of multiple GPUs.</p>
-<p>The TACC Analysis Portal (TAP) provides simplified access to interactive sessions on TACC large-scale computing resources. TAP targets users who want the convenience of web-based portal access. TAP-Supported applications including Jupyter Notebook.</p>
+<p>The TACC Analysis Portal (TAP) provides simplified access to interactive sessions on TACC large-scale computing resources. TAP targets users who want the convenience of web-based portal access. TAP Supports applications including Jupyter Notebook.</p>
 </section>
 <section id="review-pytorch-ddp">
 <h2>Review PyTorch DDP<a class="headerlink" href="#review-pytorch-ddp" title="Link to this heading">#</a></h2>
@@ -499,7 +499,7 @@ document.write(`
     <span class="n">init_processes</span><span class="p">()</span>
 </pre></div>
 </div>
-<p>If we launch the python script on 2 nodes on Frontera rtx-dev nodes, each equiped with 4 GPUs,</p>
+<p>If we launch the python script on 2 nodes on Frontera rtx nodes, each equiped with 4 GPUs,</p>
 <p>WORLD_SIZE, which is total number of GPUs in your job, is 8,</p>
 <p>GLOBAL_RANK, which is the ID for the GPU in your cluster, is [0, 1, 2, 3, 4, 5, 6, 7].</p>
 <p>LOCAL_RANK, which is the local ID for the GPU in a node, is [0, 1, 2, 3].</p>
@@ -519,23 +519,23 @@ document.write(`
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Training command: /opt/apps/tacc-apptainer/1.1.8/bin/apptainer exec --nv --bind /run/user:/run/user /scratch1/07980/sli4/containers/cnn_course.sif  torchrun --nproc_per_node 4 --nnodes 2 --node_rank=0 --master_addr=c196-022 --master_port=1234 message_passing.py
-Training command: /opt/apps/tacc-apptainer/1.1.8/bin/apptainer exec --nv --bind /run/user:/run/user /scratch1/07980/sli4/containers/cnn_course.sif  torchrun --nproc_per_node 4 --nnodes 2 --node_rank=1 --master_addr=c196-022 --master_port=1234 message_passing.py
-13:4: not a valid test operator: (
-13:4: not a valid test operator: 535.113.01
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Training command: /opt/apps/tacc-apptainer/1.1.8/bin/apptainer exec --nv --bind /run/user:/run/user /scratch1/07980/sli4/containers/cnn_course_latest.sif  torchrun --nproc_per_node 4 --nnodes 2 --node_rank=0 --master_addr=c196-031 --master_port=1234 message_passing.py
+Training command: /opt/apps/tacc-apptainer/1.1.8/bin/apptainer exec --nv --bind /run/user:/run/user /scratch1/07980/sli4/containers/cnn_course_latest.sif  torchrun --nproc_per_node 4 --nnodes 2 --node_rank=1 --master_addr=c196-031 --master_port=1234 message_passing.py
 13:4: not a valid test operator: (
 13:4: not a valid test operator: 535.113.01
 /home1/07980/sli4/.bashrc: line 1: module: command not found
 /home1/07980/sli4/.bashrc: line 2: module: command not found
 /home1/07980/sli4/.bashrc: line 3: module: command not found
-[rank4]:[W ProcessGroupNCCL.cpp:2302] Warning: 0TORCH_NCCL_AVOID_RECORD_STREAMS=1 has no effect for point-to-point collectives. (function operator())
+13:4: not a valid test operator: (
+13:4: not a valid test operator: 535.113.01
+[rank3]:[W ProcessGroupNCCL.cpp:2302] Warning: 0TORCH_NCCL_AVOID_RECORD_STREAMS=1 has no effect for point-to-point collectives. (function operator())
+[rank2]:[W ProcessGroupNCCL.cpp:2302] Warning: 0TORCH_NCCL_AVOID_RECORD_STREAMS=1 has no effect for point-to-point collectives. (function operator())
+[rank0]:[W ProcessGroupNCCL.cpp:2302] Warning: 0TORCH_NCCL_AVOID_RECORD_STREAMS=1 has no effect for point-to-point collectives. (function operator())
+[rank1]:[W ProcessGroupNCCL.cpp:2302] Warning: 0TORCH_NCCL_AVOID_RECORD_STREAMS=1 has no effect for point-to-point collectives. (function operator())
 [rank5]:[W ProcessGroupNCCL.cpp:2302] Warning: 0TORCH_NCCL_AVOID_RECORD_STREAMS=1 has no effect for point-to-point collectives. (function operator())
 [rank6]:[W ProcessGroupNCCL.cpp:2302] Warning: 0TORCH_NCCL_AVOID_RECORD_STREAMS=1 has no effect for point-to-point collectives. (function operator())
 [rank7]:[W ProcessGroupNCCL.cpp:2302] Warning: 0TORCH_NCCL_AVOID_RECORD_STREAMS=1 has no effect for point-to-point collectives. (function operator())
-[rank3]:[W ProcessGroupNCCL.cpp:2302] Warning: 0TORCH_NCCL_AVOID_RECORD_STREAMS=1 has no effect for point-to-point collectives. (function operator())
-[rank0]:[W ProcessGroupNCCL.cpp:2302] Warning: 0TORCH_NCCL_AVOID_RECORD_STREAMS=1 has no effect for point-to-point collectives. (function operator())
-[rank2]:[W ProcessGroupNCCL.cpp:2302] Warning: 0TORCH_NCCL_AVOID_RECORD_STREAMS=1 has no effect for point-to-point collectives. (function operator())
-[rank1]:[W ProcessGroupNCCL.cpp:2302] Warning: 0TORCH_NCCL_AVOID_RECORD_STREAMS=1 has no effect for point-to-point collectives. (function operator())
+[rank4]:[W ProcessGroupNCCL.cpp:2302] Warning: 0TORCH_NCCL_AVOID_RECORD_STREAMS=1 has no effect for point-to-point collectives. (function operator())
 worker_0 sent data to Rank 1
 
 worker_1 has received data from rank 0
@@ -556,39 +556,13 @@ worker_0 sent data to Rank 5
 
 worker_5 has received data from rank 0
 
-^C
-[mpiexec@c196-022.frontera.tacc.utexas.edu] Sending Ctrl-C to processes as requested
-[mpiexec@c196-022.frontera.tacc.utexas.edu] Press Ctrl-C again to force abort
-[2024-06-24 12:53:57,571] torch.distributed.elastic.agent.server.api: [WARNING] Received Signals.SIGINT death signal, shutting down workers
-[2024-06-24 12:53:57,571] torch.distributed.elastic.agent.server.api: [WARNING] Received Signals.SIGINT death signal, shutting down workers
-[2024-06-24 12:53:57,571] torch.distributed.elastic.multiprocessing.api: [WARNING] Sending process 18116 closing signal SIGINT
-[2024-06-24 12:53:57,571] torch.distributed.elastic.multiprocessing.api: [WARNING] Sending process 7318 closing signal SIGINT
-[2024-06-24 12:53:57,571] torch.distributed.elastic.multiprocessing.api: [WARNING] Sending process 18117 closing signal SIGINT
-[2024-06-24 12:53:57,571] torch.distributed.elastic.multiprocessing.api: [WARNING] Sending process 18118 closing signal SIGINT
-[2024-06-24 12:53:57,571] torch.distributed.elastic.multiprocessing.api: [WARNING] Sending process 7319 closing signal SIGINT
-[2024-06-24 12:53:57,571] torch.distributed.elastic.multiprocessing.api: [WARNING] Sending process 7320 closing signal SIGINT
-[2024-06-24 12:53:57,571] torch.distributed.elastic.multiprocessing.api: [WARNING] Sending process 18119 closing signal SIGINT
-[2024-06-24 12:53:57,571] torch.distributed.elastic.multiprocessing.api: [WARNING] Sending process 7321 closing signal SIGINT
-Traceback (most recent call last):
-  File &quot;/home1/07980/sli4/cnn-course-scale/part3/message_passing.py&quot;, line 31, in &lt;module&gt;
-    init_processes()
-  File &quot;/home1/07980/sli4/cnn-course-scale/part3/message_passing.py&quot;, line 28, in init_processes
-    run()
-  File &quot;/home1/07980/sli4/cnn-course-scale/part3/message_passing.py&quot;, line 18, in run
-    dist.send(tensor=tensor, dst=rank_recv)
-  File &quot;/usr/local/lib/python3.10/dist-packages/torch/distributed/c10d_logger.py&quot;, line 72, in wrapper
-  File &quot;/usr/local/lib/python3.10/dist-packages/torch/distributed/distributed_c10d.py&quot;, line 1635, in send
-KeyboardInterrupt
-Traceback (most recent call last):
-  File &quot;/home1/07980/sli4/cnn-course-scale/part3/message_passing.py&quot;, line 31, in &lt;module&gt;
-    init_processes()
-  File &quot;/home1/07980/sli4/cnn-course-scale/part3/message_passing.py&quot;, line 28, in init_processes
-    run()
-  File &quot;/home1/07980/sli4/cnn-course-scale/part3/message_passing.py&quot;, line 21, in run
-    dist.recv(tensor=tensor, src=0)
-  File &quot;/usr/local/lib/python3.10/dist-packages/torch/distributed/c10d_logger.py&quot;, line 72, in wrapper
-  File &quot;/usr/local/lib/python3.10/dist-packages/torch/distributed/distributed_c10d.py&quot;, line 1678, in recv
-KeyboardInterrupt
+worker_0 sent data to Rank 6
+
+worker_6 has received data from rank 0
+
+worker_0 sent data to Rank 7
+
+worker_7 has received data from rank 0
 </pre></div>
 </div>
 </div>
@@ -618,14 +592,14 @@ KeyboardInterrupt
 </pre></div>
 </div>
 <p>The above example is suitable for the TACC Frontera machine, where each rtx node is equipped with 4 GPUs (nproc_per_node is 4).</p>
-<p>Say if we would run our application on Lonestar6, another different equipped with GPU from TACC, with 3 GPUs on each node, we would changed the “nproc_per_node” argument to 3:</p>
+<p>Say if we would run our application on Lonestar6, another machine equipped with GPU from TACC, with 3 GPUs on each node, we would changed the “nproc_per_node” argument to 3:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">torchrun</span> <span class="o">--</span><span class="n">nproc_per_node</span> <span class="mi">3</span> <span class="o">--</span><span class="n">nnodes</span> <span class="mi">2</span> <span class="o">--</span><span class="n">node_rank</span><span class="o">=</span><span class="mi">0</span> <span class="o">--</span><span class="n">master_addr</span><span class="o">=</span><span class="n">c000</span><span class="o">-</span><span class="mi">001</span> <span class="o">--</span><span class="n">master_port</span><span class="o">=</span><span class="mi">1234</span> <span class="n">message_passing</span><span class="o">.</span><span class="n">py</span>
 </pre></div>
 </div>
 </section>
 <section id="set-environment-variable-with-mpirun-and-slurm">
 <h3>Set Environment Variable with mpirun and SLURM<a class="headerlink" href="#set-environment-variable-with-mpirun-and-slurm" title="Link to this heading">#</a></h3>
-<p>The <code class="docutils literal notranslate"><span class="pre">torchrun</span></code> launcher is all we need to launch a script on multiple nodes. Why do we want to use it in combination with <code class="docutils literal notranslate"><span class="pre">mpirun</span></code> and SLURM? We have to ssh on to each machine and manually modify the run the launch command on each node, and that is error-prone. With the help of <code class="docutils literal notranslate"><span class="pre">mpirun</span></code> and SLURM, we can launch the same job with only one command.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">torchrun</span></code> launcher is all we need to launch a script on multiple nodes. Why do we want to use it in combination with <code class="docutils literal notranslate"><span class="pre">mpirun</span></code> and SLURM? We have to ssh on to each machine and manually modify the launch command on each node, and that is error-prone. With the help of <code class="docutils literal notranslate"><span class="pre">mpirun</span></code> and SLURM, we can launch the same job with only one command.</p>
 <section id="message-passing-interface-mpi">
 <h4>Message Passing Interface (MPI)<a class="headerlink" href="#message-passing-interface-mpi" title="Link to this heading">#</a></h4>
 <p>The Message Passing Interface (MPI) is a standardized and portable message-passing standard designed to function on parallel computing architectures.[2] Here we use MPI as a fronetend for launching the job, communicating node information.</p>
@@ -634,7 +608,7 @@ KeyboardInterrupt
 <h4>mpirun command<a class="headerlink" href="#mpirun-command" title="Link to this heading">#</a></h4>
 <p>Open MPI is a MPI library project. The <code class="docutils literal notranslate"><span class="pre">mpirun</span></code> command is used here to execute parallel jobs in Open MPI.</p>
 <p>We use an mpirun command line of the following form:</p>
-<p><code class="docutils literal notranslate"><span class="pre">%</span> <span class="pre">mpirun</span> <span class="pre">[</span> <span class="pre">-np</span> <span class="pre">number-of-processes</span> <span class="pre">]</span> <span class="pre">[-ppn</span> <span class="pre">processes-per-node]</span> <span class="pre">&lt;program&gt;</span></code></p>
+<p><code class="docutils literal notranslate"><span class="pre">%</span> <span class="pre">mpirun</span> <span class="pre">[-np</span> <span class="pre">number-of-processes]</span> <span class="pre">[-ppn</span> <span class="pre">processes-per-node]</span> <span class="pre">&lt;program&gt;</span></code></p>
 <p>This command will run number-of-processes copies of &lt;program&gt;.</p>
 <p>In the command line above:</p>
 <p>-np sets the number of MPI processes to launch.</p>
@@ -726,7 +700,7 @@ worker_7<span class="w"> </span>has<span class="w"> </span>received<span class="
 </section>
 <section id="point-to-point-communication-vs-collective-communication">
 <h4>Point-to-Point Communication vs. Collective Communication<a class="headerlink" href="#point-to-point-communication-vs-collective-communication" title="Link to this heading">#</a></h4>
-<p>The above example uses point-to-point communication through  <code class="docutils literal notranslate"><span class="pre">send</span></code> and <code class="docutils literal notranslate"><span class="pre">recv</span></code> functions. Point-to-point communication is useful when we want more find-grained control over the communication of our process.</p>
+<p>The above example uses point-to-point communication through  <code class="docutils literal notranslate"><span class="pre">send</span></code> and <code class="docutils literal notranslate"><span class="pre">recv</span></code> functions. Point-to-point communication is useful when we want more fine-grained control over the communication of our process.</p>
 <p><img alt="../_images/send_recv.png" src="../_images/send_recv.png" /> [4]</p>
 <p>Remember PyTorch’s DistributedDataParallel uses collective communications instead of point-to-point ones: all gradients are synchronized by averaging gradients from each GPU and sent back to the individual GPUs via an Allreduce operation. The Allreudce collective communication applies on every tensor and stores result in all processes in the process group.</p>
 <p><img alt="../_images/all_reduce.png" src="../_images/all_reduce.png" /> [5]</p>
@@ -775,7 +749,7 @@ worker_7<span class="w"> </span>has<span class="w"> </span>received<span class="
             <span class="p">},</span> <span class="n">checkpoint_file</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>We will use launch the python script with the “mpirun + torchrun” launcher we used for the message passing example:</p>
+<p>We will launch the python script with the “mpirun + torchrun” launcher we used for the message passing example:</p>
 <p>We use <code class="docutils literal notranslate"><span class="pre">mpirun</span></code> to launch a bash script from one node:</p>
 <p><code class="docutils literal notranslate"><span class="pre">mpirun</span> <span class="pre">-np</span> <span class="pre">2</span> <span class="pre">-ppn</span> <span class="pre">1</span> <span class="pre">run_distributed.sh</span> </code></p>
 <p>Where the run_distributed.sh script generates the <code class="docutils literal notranslate"><span class="pre">torchrun</span></code> command on each node for us:</p>
@@ -920,16 +894,16 @@ Distributed environment has been properly closed
         },
         codeMirrorConfig: {
             theme: "abcdef",
-            mode: "cnn_course_container"
+            mode: "python"
         },
         kernelOptions: {
-            name: "cnn_course_container",
+            name: "python3",
             path: "./scaling_part3"
         },
         predefinedOutput: true
     }
     </script>
-    <script>kernelName = 'cnn_course_container'</script>
+    <script>kernelName = 'python3'</script>
 
                 </article>
               
